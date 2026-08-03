@@ -17,5 +17,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
-  await handleUpdate(req as never, res as never);
+  try {
+    await handleUpdate(req as never, res as never);
+  } catch (err) {
+    console.error('webhook failed:', err);
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
 }

@@ -3,8 +3,6 @@ import { isReady, setTarget } from '../game/engine';
 import type { Room } from '../game/types';
 import { saveRoom } from '../store';
 
-const WEB_APP_URL = import.meta.env.VITE_WEB_APP_URL ?? 'http://localhost:5173';
-
 type Props = {
   room: Room;
   slot: 'p0' | 'p1';
@@ -43,7 +41,7 @@ export default function Setup({ room, slot, onReady, onUpdate }: Props) {
       {slot === 'p0' && !mySet && (
         <div className="card">
           <p className="muted">Invite your partner:</p>
-          <code className="link">{WEB_APP_URL}?startapp={room.id}</code>
+          <code className="link">{window.location.origin}?startapp={room.id}</code>
         </div>
       )}
       {mySet ? (

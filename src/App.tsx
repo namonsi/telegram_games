@@ -1,91 +1,74 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { initData } from '@tma.js/sdk';
 import type { Room } from './game/types';
-import { isReady } from './game/engine';
-import { loadRoom } from './store';
+import { api } from './api';
+import { useRoom } from './useRoom';
 import Lobby from './ui/Lobby';
 import Setup from './ui/Setup';
 import GameBoard from './ui/GameBoard';
 import Result from './ui/Result';
 
-type Screen =
-  | { name: 'lobby' }
-  | { name: 'setup'; room: Room; slot: 'p0' | 'p1' }
-  | { name: 'board'; room: Room }
-  | { name: 'result'; room: Room };
+type Props = { me: { id: string; firstName: string; photoUrl?: string } };
 
-const derive = (room: Room): Screen => {
-  if (room.winner) return { name: 'result', room };
-  if (isReady(room)) return { name: 'board', room };
-  if (room.targets.p0 === undefined) return { name: 'setup', room, slot: 'p0' };
-  return { name: 'setup', room, slot: 'p1' };
-};
+export default function App({ me }: Props) {
+  const [roomId, setRoomId] = useState<string | null>(null);
+  const [room, setRoom] = useState<Room | null>(null);
+  const polled = useRoom(roomId);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
-const refresh = (room: Room, prev: Screen): Screen => {
-  if (room.winner) return { name: 'result', room };
-  if (isReady(room)) return { name: 'board', room };
-  if (prev.name === 'setup') return { name: 'setup', room, slot: prev.slot };
-  return derive(room);
-};
-
-export default function App() {
-  const [screen, setScreen] = useState<Screen>({ name: 'lobby' });
+  // polling refresh catches the partner's moves
+  useEffect(() => {
+    if (polled) setRoom(polled);
+  }, [polled]);
 
   const startParam = useMemo(
     () => initData.startParam() ?? new URLSearchParams(window.location.search).get('startapp') ?? undefined,
     [],
   );
-  useEffect(() => {
-    if (!startParam) return;
-    const room = loadRoom(startParam);
-    if (room) setScreen(derive(room));
-  }, [startParam]);
 
-  const applyRoom = useCallback(
-    (room: Room) => {
-      if (screen.name === 'lobby') return;
-      setScreen(refresh(room, screen));
-    },
-    [screen],
-  );
+  const join = useCallback(async (id: string) => {
+    try {
+      const joined = await api.join(id, me.firstName);
+      setRoomId(joined.id);
+      setRoom(joined);
+      setJoinError(null);
+    } catch (e) {
+      setJoinError((e as Error).message);
+    }
+  }, [me.firstName]);
 
   useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key !== 'gtn:rooms' || screen.name === 'lobby') return;
-      const room = loadRoom(screen.room.id);
-      if (room) setScreen(refresh(room, screen));
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, [screen]);
+    if (startParam && !roomId) void join(startParam);
+  }, [startParam, roomId, join]);
 
-  switch (screen.name) {
-    case 'lobby':
-      return <Lobby onCreate={(room) => setScreen(derive(room))} />;
+  // ponytail: action results apply immediately; the next poll overwrites with fresher state
+  const applyRoom = useCallback((next: Room) => setRoom(next), []);
+  const enterRoom = useCallback((next: Room) => {
+    setRoomId(next.id);
+    setRoom(next);
+  }, []);
+
+  if (!roomId) {
+    return <Lobby me={me} onCreated={enterRoom} onJoin={join} joinError={joinError} />;
+  }
+
+  if (!room) {
+    return (
+      <div className="screen">
+        <h1>Guess the Number</h1>
+        <p className="muted">Loading room...</p>
+      </div>
+    );
+  }
+
+  switch (room.status) {
+    case 'waiting':
+      return <Lobby me={me} room={room} onCreated={applyRoom} onJoin={join} joinError={joinError} />;
     case 'setup':
-      return (
-        <Setup
-          room={screen.room}
-          slot={screen.slot}
-          onReady={(room) => setScreen(derive(room))}
-          onUpdate={applyRoom}
-        />
-      );
-    case 'board':
-      return (
-        <GameBoard
-          room={screen.room}
-          onFinish={(room) => setScreen({ name: 'result', room })}
-          onUpdate={applyRoom}
-        />
-      );
-    case 'result':
-      return (
-        <Result
-          room={screen.room}
-          onRematch={(room) => setScreen(derive(room))}
-          onNewGame={() => setScreen({ name: 'lobby' })}
-        />
-      );
+      return <Setup me={me} room={room} onUpdate={applyRoom} />;
+    case 'playing':
+      return <GameBoard me={me} room={room} onUpdate={applyRoom} />;
+    case 'finished':
+      return <Result me={me} room={room} onUpdate={applyRoom} />;
   }
 }

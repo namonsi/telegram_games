@@ -1,64 +1,129 @@
-import { useState } from 'react';
-import { guess } from '../game/engine';
+import { useEffect, useState } from 'react';
 import type { Room } from '../game/types';
-import { addWin, saveRoom } from '../store';
+import { api } from '../api';
+
+const EMOJIS = ['❤️', '😂', '😘', '😤', '🔥', '🙈'];
 
 type Props = {
+  me: { id: string; firstName: string; photoUrl?: string };
   room: Room;
-  onFinish: (room: Room) => void;
   onUpdate: (room: Room) => void;
 };
 
-export default function GameBoard({ room, onFinish, onUpdate }: Props) {
+export default function GameBoard({ me, room, onUpdate }: Props) {
   const [value, setValue] = useState('');
-  const current = room.players.find((p) => p.id === room.turn)!;
+  const [text, setText] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const current = room.players.find((p) => p.id === room.turn);
+  const myTurn = room.turn === me.id;
   const last = room.history[room.history.length - 1];
   const lastHint = last ? last.hint : null;
-  const lastPlayer = last ? room.players.find((p) => p.id === last.playerId)!.firstName : null;
+  const lastPlayer = last ? room.players.find((p) => p.id === last.playerId)?.firstName : null;
 
-  const submit = () => {
+  const reaction = room.reaction && room.reaction.expiresAt > Date.now() ? room.reaction : null;
+  const chat = room.chat && room.chat.expiresAt > Date.now() ? room.chat : null;
+
+  // ponytail: local TTL so the bubble can fade before the next 2s poll clears it
+  const [bubbleKey, setBubbleKey] = useState(0);
+  useEffect(() => {
+    if (room.reaction || room.chat) setBubbleKey((k) => k + 1);
+  }, [room.reaction?.emoji, room.chat?.text]);
+
+  const submit = async () => {
+    setBusy(true);
+    setError(null);
     try {
-      const { room: next } = guess(room, room.turn, Number(value));
-      saveRoom(next);
+      const next = await api.guess(room.id, Number(value));
       onUpdate(next);
       setValue('');
-      if (next.winner) {
-        addWin(next.id, next.winner);
-        onFinish(next);
-      }
     } catch (e) {
-      alert((e as Error).message);
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
     }
+  };
+
+  const sendReaction = async (emoji: string) => {
+    const next = await api.react(room.id, emoji);
+    onUpdate(next);
+  };
+
+  const sendChat = async () => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const next = await api.chat(room.id, trimmed);
+    onUpdate(next);
+    setText('');
   };
 
   return (
     <div className="screen">
       <h1>Guess the Number</h1>
       <p className="muted">
-        Range {room.range.min}–{room.range.max}
+        Range {room.range.min}–{room.range.max} · Round {room.stats.games + 1}
       </p>
-      {lastHint && (
-        <div className={`card hint-${lastHint}`}>
-          {lastPlayer} guessed {last.value} — it was <b>{lastHint === 'hit' ? 'spot on!' : lastHint === 'higher' ? 'too low, go higher' : 'too high, go lower'}</b>
+
+      {reaction && (
+        <div className="bubble bubble-react" key={`r${bubbleKey}`}>
+          <span className="emoji">{reaction.emoji}</span>
         </div>
       )}
-      <h2>{current.firstName}, your turn</h2>
-      <input
-        type="number"
-        value={value}
-        min={room.range.min}
-        max={room.range.max}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder={`${room.range.min}–${room.range.max}`}
-      />
-      <button onClick={submit}>Guess</button>
+      {chat && (
+        <div className="bubble" key={`c${bubbleKey}`}>
+          <b>{chat.sender}</b> {chat.text}
+        </div>
+      )}
+
+      {lastHint && (
+        <div className={`card hint-${lastHint}`}>
+          {lastPlayer} guessed {last.value} — it was{' '}
+          <b>{lastHint === 'hit' ? 'spot on!' : lastHint === 'higher' ? 'too low, go higher' : 'too high, go lower'}</b>
+        </div>
+      )}
+
+      {myTurn ? (
+        <div>
+          <h2>Your turn</h2>
+          <input
+            type="number"
+            value={value}
+            min={room.range.min}
+            max={room.range.max}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder={`${room.range.min}–${room.range.max}`}
+          />
+          {error && <p className="error">{error}</p>}
+          <button onClick={submit} disabled={busy}>
+            {busy ? 'Guessing…' : 'Guess'}
+          </button>
+        </div>
+      ) : (
+        <p className="muted">Waiting for {current?.firstName ?? 'your partner'} to guess…</p>
+      )}
+
+      <div className="react-row">
+        {EMOJIS.map((e) => (
+          <button key={e} className="emoji-btn" onClick={() => sendReaction(e)} aria-label={`React ${e}`}>
+            {e}
+          </button>
+        ))}
+      </div>
+
+      <div className="row">
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Say something…" maxLength={160} />
+        <button className="secondary" onClick={sendChat} disabled={!text.trim()}>
+          Send
+        </button>
+      </div>
 
       <h3>Guess history</h3>
       <ul className="history">
         {room.history.length === 0 && <li className="muted">No guesses yet</li>}
         {room.history.map((g, i) => (
           <li key={i}>
-            {room.players.find((p) => p.id === g.playerId)!.firstName}: {g.value} →{' '}
+            {room.players.find((p) => p.id === g.playerId)?.firstName}: {g.value} →{' '}
             {g.hint === 'hit' ? 'hit' : g.hint === 'higher' ? 'higher' : 'lower'}
           </li>
         ))}

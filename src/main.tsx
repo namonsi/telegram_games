@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { init, isTMA, mockTelegramEnv } from '@tma.js/sdk';
+import { init, initData, isTMA, mockTelegramEnv } from '@tma.js/sdk';
 import App from './App';
 import './index.css';
 
@@ -29,6 +29,15 @@ try {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <App me={me()} />
   </StrictMode>,
 );
+
+function me() {
+  const user = initData.user();
+  return {
+    id: String(user?.id ?? 0),
+    firstName: user?.first_name ?? 'Player',
+    photoUrl: user?.photo_url,
+  };
+}

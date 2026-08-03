@@ -1,51 +1,68 @@
 import { useState } from 'react';
-import { isReady, setTarget } from '../game/engine';
 import type { Room } from '../game/types';
-import { saveRoom } from '../store';
+import { api, inviteLink } from '../api';
 
 type Props = {
+  me: { id: string; firstName: string; photoUrl?: string };
   room: Room;
-  slot: 'p0' | 'p1';
-  onReady: (room: Room) => void;
   onUpdate: (room: Room) => void;
 };
 
-export default function Setup({ room, slot, onReady, onUpdate }: Props) {
+export default function Setup({ me, room, onUpdate }: Props) {
   const [value, setValue] = useState('');
-  const me = room.players.find((p) => p.id === slot)!;
-  const other = room.players.find((p) => p.id !== slot)!;
-  const mySet = room.targets[slot] !== undefined;
-  const bothSet = isReady(room);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  if (bothSet) return null;
+  const meInRoom = room.players.find((p) => p.id === me.id);
+  const other = room.players.find((p) => p.id !== me.id);
+  const mySet = room.targets[me.id] !== undefined;
+  const bothSet = room.players.length === 2 && room.players.every((p) => room.targets[p.id] !== undefined);
 
-  const commit = () => {
+  if (bothSet) {
+    return (
+      <div className="screen">
+        <h1>Set your secret number</h1>
+        <p className="muted">Starting the round...</p>
+      </div>
+    );
+  }
+
+  const commit = async () => {
+    setBusy(true);
+    setError(null);
     try {
-      const next = setTarget(room, slot, Number(value));
-      saveRoom(next);
+      const next = await api.setTarget(room.id, Number(value));
       onUpdate(next);
-      if (isReady(next)) onReady(next);
       setValue('');
     } catch (e) {
-      alert((e as Error).message);
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
     }
+  };
+
+  const copyInvite = () => {
+    navigator.clipboard.writeText(inviteLink(room.id)).catch(() => {});
   };
 
   return (
     <div className="screen">
       <h1>Set your secret number</h1>
       <p className="muted">
-        {me.firstName}, pick a number from {room.range.min} to {room.range.max}. It stays hidden
-        from {other.firstName}.
+        {meInRoom?.firstName ?? me.firstName}, pick a number from {room.range.min} to {room.range.max}. It stays hidden
+        from {other?.firstName ?? 'your partner'}.
       </p>
-      {slot === 'p0' && !mySet && (
+      {!other && (
         <div className="card">
           <p className="muted">Invite your partner:</p>
-          <code className="link">{window.location.origin}?startapp={room.id}</code>
+          <code className="link">{inviteLink(room.id)}</code>
+          <button className="secondary" onClick={copyInvite}>
+            Copy invite
+          </button>
         </div>
       )}
       {mySet ? (
-        <p className="muted">Waiting for {other.firstName} to set their number…</p>
+        <p className="muted">Waiting for {other?.firstName ?? 'your partner'} to set their number…</p>
       ) : (
         <div>
           <input
@@ -56,7 +73,10 @@ export default function Setup({ room, slot, onReady, onUpdate }: Props) {
             onChange={(e) => setValue(e.target.value)}
             placeholder={`${room.range.min}–${room.range.max}`}
           />
-          <button onClick={commit}>Lock in secret number</button>
+          {error && <p className="error">{error}</p>}
+          <button onClick={commit} disabled={busy}>
+            {busy ? 'Locking…' : 'Lock in secret number'}
+          </button>
         </div>
       )}
     </div>

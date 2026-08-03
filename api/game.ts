@@ -1,4 +1,4 @@
-import { create, joinRoom, makeGuess, react, rematchRoom, sendChat, setMyTarget } from './core';
+import { create, joinRoom, makeGuess, react, rematchRoom, sendChat, setMyTarget } from './core.js';
 
 type Body = {
   action: 'create' | 'join' | 'setTarget' | 'guess' | 'react' | 'chat' | 'rematch';

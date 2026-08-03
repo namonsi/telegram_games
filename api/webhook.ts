@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { webhookCallback } from 'grammy';
-import { createBot } from '../bot/bot';
+import { createBot } from '../bot/bot.js';
 
 // ponytail: "https" adapter matches Vercel's Node req/res shape, per grammY hosting docs.
 const handleUpdate = webhookCallback(createBot(), 'https');

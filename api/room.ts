@@ -1,4 +1,4 @@
-import { getRoom } from './store';
+import { getRoom } from './store.js';
 
 type Req = {
   query: { [key: string]: string | string[] | undefined };

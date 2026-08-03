@@ -1,4 +1,4 @@
-import type { Chat, Guess, Player, Reaction, Room } from './types';
+import type { Chat, Guess, Player, Reaction, Room } from './types.js';
 
 export function createRoom(id: string, range: { min: number; max: number }, creator: Player): Room {
   return {

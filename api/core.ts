@@ -1,7 +1,7 @@
 import { hashToken, parse, validate } from '@tma.js/init-data-node';
-import { createRoom as engineCreate, guess, join, rematch, setChat, setReaction, setTarget } from '../src/game/engine';
-import type { Player, Room } from '../src/game/types';
-import { getRoom, putRoom } from './store';
+import { createRoom as engineCreate, guess, join, rematch, setChat, setReaction, setTarget } from '../src/game/engine.js';
+import type { Player, Room } from '../src/game/types.js';
+import { getRoom, putRoom } from './store.js';
 
 const REACTION_TTL = 6000;
 const CHAT_TTL = 6000;

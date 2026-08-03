@@ -1,5 +1,5 @@
 import { kv } from '@vercel/kv';
-import type { Room } from '../src/game/types';
+import type { Room } from '../src/game/types.js';
 
 // ponytail: in-memory fallback so local dev-api works without a KV store.
 // Prod (Vercel) always has KV_REST_API_URL set.

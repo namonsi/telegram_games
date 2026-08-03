@@ -1,0 +1,34 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { init, isTMA, mockTelegramEnv } from '@tma.js/sdk';
+import App from './App';
+import './index.css';
+
+if (!isTMA()) {
+  // ponytail: dev/browser fallback so the app runs outside Telegram
+  mockTelegramEnv({
+    launchParams: {
+      tgWebAppVersion: '8.0',
+      tgWebAppPlatform: 'tdesktop',
+      tgWebAppThemeParams: {},
+      tgWebAppData: new URLSearchParams([
+        ['user', JSON.stringify({ id: 123, first_name: 'Test', last_name: 'User', username: 'tester', language_code: 'en', is_premium: true })],
+        ['hash', 'mock-hash'],
+        ['auth_date', String(Math.floor(Date.now() / 1000))],
+        ['signature', 'mock-signature'],
+      ]),
+    },
+  });
+}
+
+try {
+  init();
+} catch {
+  // outside Telegram: mock data above already provides launch params
+}
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);

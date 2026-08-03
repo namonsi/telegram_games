@@ -23,15 +23,19 @@ if (!isTMA()) {
 
 try {
   init();
+  initData.restore();
 } catch {
   // outside Telegram: mock data above already provides launch params
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App me={me()} />
-  </StrictMode>,
-);
+// wait a microtask so restore()'s signals settle before first paint reads them
+void Promise.resolve().then(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App me={me()} />
+    </StrictMode>,
+  );
+});
 
 function me() {
   const user = initData.user();

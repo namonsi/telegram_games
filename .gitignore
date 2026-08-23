@@ -5,3 +5,6 @@ dist
 *.tsbuildinfo
 .playwright-mcp/
 bot.log
+
+*.png
+!public/**/*.png

@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import type { Room } from '../game/types';
+import type { NumberRoom } from '../game/types';
 import { api, inviteLink } from '../api';
 
 type Props = {
   me: { id: string; firstName: string; photoUrl?: string };
-  room: Room;
-  onUpdate: (room: Room) => void;
+  room: NumberRoom;
+  onUpdate: (room: NumberRoom) => void;
 };
 
 export default function Setup({ me, room, onUpdate }: Props) {
@@ -32,7 +32,7 @@ export default function Setup({ me, room, onUpdate }: Props) {
     setError(null);
     try {
       const next = await api.setTarget(room.id, Number(value));
-      onUpdate(next);
+      onUpdate(next as NumberRoom);
       setValue('');
     } catch (e) {
       setError((e as Error).message);

@@ -1,18 +1,31 @@
 import { initData } from '@tma.js/sdk';
-import type { Room } from './game/types';
+import type { BattleshipRoom, GameKind, KnowMeRoom, MysteryRoom, QuizRoom, Room, TwentyRoom } from './game/types';
 
 const BOT_USERNAME = 'embel_games_bot';
 
-type Action =
-  | { action: 'create'; range: { min: number; max: number }; firstName: string }
-  | { action: 'join'; roomId: string; firstName?: string }
-  | { action: 'setTarget'; roomId: string; target: number }
-  | { action: 'guess'; roomId: string; guess: number }
-  | { action: 'react'; roomId: string; emoji: string }
-  | { action: 'chat'; roomId: string; text: string }
-  | { action: 'rematch'; roomId: string };
+export type SurpriseKind = 'note' | 'gift' | 'random';
 
-async function post(body: Action): Promise<Room> {
+type Body = {
+  action: string;
+  roomId?: string;
+  kind?: GameKind;
+  range?: { min: number; max: number };
+  target?: number;
+  guess?: number;
+  picks?: { q: string; a: string }[];
+  text?: string;
+  ships?: number[][];
+  cell?: number;
+  secret?: string;
+  question?: string;
+  verdict?: string;
+  suspectId?: string;
+  choice?: number;
+  emoji?: string;
+  firstName?: string;
+};
+
+async function post<T = Room>(body: Body): Promise<T> {
   const res = await fetch('/api/game', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-init-data': initData.raw() ?? '' },
@@ -20,26 +33,41 @@ async function post(body: Action): Promise<Room> {
   });
   const data = (await res.json().catch(() => ({}))) as { room?: Room; error?: string };
   if (!res.ok) throw new Error(data.error ?? 'Request failed');
-  return data.room!;
+  return data.room! as T;
 }
 
 export async function fetchRoom(id: string): Promise<Room | null> {
-  const res = await fetch(`/api/room?id=${encodeURIComponent(id)}`);
+  const res = await fetch(`/api/room?id=${encodeURIComponent(id)}`, {
+    headers: { 'x-init-data': initData.raw() ?? '' },
+  });
   if (res.status === 404) return null;
   const data = (await res.json()) as { room: Room };
   return data.room;
 }
 
 export const api = {
-  create: (range: { min: number; max: number }, firstName: string) => post({ action: 'create', range, firstName }),
+  create: (kind: GameKind, range: { min: number; max: number }, firstName: string) =>
+    post({ action: 'create', kind, range, firstName }),
   join: (roomId: string, firstName?: string) => post({ action: 'join', roomId, firstName }),
   setTarget: (roomId: string, target: number) => post({ action: 'setTarget', roomId, target }),
   guess: (roomId: string, guess: number) => post({ action: 'guess', roomId, guess }),
+  submitPicks: (roomId: string, picks: { q: string; a: string }[]) => post<KnowMeRoom>({ action: 'submitPicks', roomId, picks }),
+  answerKnowMe: (roomId: string, text: string) => post<KnowMeRoom>({ action: 'answerKnowMe', roomId, text }),
+  placeShips: (roomId: string, ships: number[][]) => post<BattleshipRoom>({ action: 'placeShips', roomId, ships }),
+  fire: (roomId: string, cell: number) => post<BattleshipRoom>({ action: 'fire', roomId, cell }),
+  setSecret: (roomId: string, secret: string) => post<TwentyRoom>({ action: 'setSecret', roomId, secret }),
+  askTwenty: (roomId: string, question: string) => post<TwentyRoom>({ action: 'ask', roomId, question }),
+  answerTwenty: (roomId: string, verdict: string) => post<TwentyRoom>({ action: 'answerTwenty', roomId, verdict }),
+  guessSecret: (roomId: string, text: string) => post<TwentyRoom>({ action: 'guessSecret', roomId, text }),
+  investigate: (roomId: string) => post<MysteryRoom>({ action: 'investigate', roomId }),
+  accuse: (roomId: string, suspectId: string) => post<MysteryRoom>({ action: 'accuse', roomId, suspectId }),
+  answerQuiz: (roomId: string, choice: number) => post<QuizRoom>({ action: 'answerQuiz', roomId, choice }),
   react: (roomId: string, emoji: string) => post({ action: 'react', roomId, emoji }),
   chat: (roomId: string, text: string) => post({ action: 'chat', roomId, text }),
   rematch: (roomId: string) => post({ action: 'rematch', roomId }),
 };
 
-export function inviteLink(roomId: string): string {
-  return `https://t.me/${BOT_USERNAME}?startapp=${roomId}`;
+export function inviteLink(roomId: string, gift?: SurpriseKind): string {
+  const start = gift ? `${roomId}~${gift}` : roomId;
+  return `https://t.me/${BOT_USERNAME}?startapp=${encodeURIComponent(start)}`;
 }

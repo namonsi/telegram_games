@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
-import type { Room } from '../game/types';
+import type { NumberRoom } from '../game/types';
 import { api } from '../api';
 
 const EMOJIS = ['❤️', '😂', '😘', '😤', '🔥', '🙈'];
 
 type Props = {
   me: { id: string; firstName: string; photoUrl?: string };
-  room: Room;
-  onUpdate: (room: Room) => void;
+  room: NumberRoom;
+  onUpdate: (room: NumberRoom) => void;
 };
 
 export default function GameBoard({ me, room, onUpdate }: Props) {
@@ -36,7 +36,7 @@ export default function GameBoard({ me, room, onUpdate }: Props) {
     setError(null);
     try {
       const next = await api.guess(room.id, Number(value));
-      onUpdate(next);
+      onUpdate(next as NumberRoom);
       setValue('');
     } catch (e) {
       setError((e as Error).message);
@@ -47,14 +47,14 @@ export default function GameBoard({ me, room, onUpdate }: Props) {
 
   const sendReaction = async (emoji: string) => {
     const next = await api.react(room.id, emoji);
-    onUpdate(next);
+    onUpdate(next as NumberRoom);
   };
 
   const sendChat = async () => {
     const trimmed = text.trim();
     if (!trimmed) return;
     const next = await api.chat(room.id, trimmed);
-    onUpdate(next);
+    onUpdate(next as NumberRoom);
     setText('');
   };
 

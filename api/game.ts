@@ -1,13 +1,60 @@
-import { create, joinRoom, makeGuess, react, rematchRoom, sendChat, setMyTarget } from './core.js';
+import {
+  accuse,
+  answerKnowMe,
+  answerQuiz,
+  answerTwenty,
+  askTwenty,
+  create,
+  fireShot,
+  guessSecret,
+  investigate,
+  joinRoom,
+  makeGuess,
+  placeShips,
+  react,
+  rematchRoom,
+  sendChat,
+  setMyTarget,
+  setSecret,
+  submitKnowMePicks,
+} from './core.js';
+import type { GameKind, Range } from '../src/game/types.js';
 
 type Body = {
-  action: 'create' | 'join' | 'setTarget' | 'guess' | 'react' | 'chat' | 'rematch';
+  action:
+    | 'create'
+    | 'join'
+    | 'setTarget'
+    | 'guess'
+    | 'submitPicks'
+    | 'answerKnowMe'
+    | 'placeShips'
+    | 'fire'
+    | 'setSecret'
+    | 'ask'
+    | 'answerTwenty'
+    | 'guessSecret'
+    | 'investigate'
+    | 'accuse'
+    | 'answerQuiz'
+    | 'react'
+    | 'chat'
+    | 'rematch';
   roomId?: string;
-  range?: { min: number; max: number };
+  kind?: GameKind;
+  range?: Range;
   target?: number;
   guess?: number;
-  emoji?: string;
+  picks?: { q: string; a: string }[];
   text?: string;
+  ships?: number[][];
+  cell?: number;
+  secret?: string;
+  question?: string;
+  verdict?: string;
+  suspectId?: string;
+  choice?: number;
+  emoji?: string;
   firstName?: string;
 };
 
@@ -42,20 +89,47 @@ export default async function handler(req: Req, res: Res) {
 
 async function run(body: Body, initData: string | undefined): Promise<unknown> {
   switch (body.action) {
-    case 'create':
-      return create(initData!, body.range ?? { min: 1, max: 100 }, body.firstName);
+    case 'create': {
+      const range = body.range ?? { min: 1, max: 100 };
+      if (!Number.isFinite(range.min) || !Number.isFinite(range.max) || range.min >= range.max) {
+        throw new Error('Invalid range');
+      }
+      return create(initData!, body.kind ?? 'number', range, body.firstName);
+    }
     case 'join':
-      return joinRoom(initData!, body.roomId!, body.firstName);
+      return joinRoom(initData, body.roomId!, body.firstName);
     case 'setTarget':
-      return setMyTarget(initData!, body.roomId!, body.target!);
+      return setMyTarget(initData, body.roomId!, body.target);
     case 'guess':
-      return makeGuess(initData!, body.roomId!, body.guess!);
+      return makeGuess(initData, body.roomId!, body.guess);
+    case 'submitPicks':
+      return submitKnowMePicks(initData, body.roomId!, body.picks);
+    case 'answerKnowMe':
+      return answerKnowMe(initData, body.roomId!, body.text);
+    case 'placeShips':
+      return placeShips(initData, body.roomId!, body.ships);
+    case 'fire':
+      return fireShot(initData, body.roomId!, body.cell);
+    case 'setSecret':
+      return setSecret(initData, body.roomId!, body.secret);
+    case 'ask':
+      return askTwenty(initData, body.roomId!, body.question);
+    case 'answerTwenty':
+      return answerTwenty(initData, body.roomId!, body.verdict);
+    case 'guessSecret':
+      return guessSecret(initData, body.roomId!, body.text);
+    case 'investigate':
+      return investigate(initData, body.roomId!);
+    case 'accuse':
+      return accuse(initData, body.roomId!, body.suspectId);
+    case 'answerQuiz':
+      return answerQuiz(initData, body.roomId!, body.choice);
     case 'react':
-      return react(initData!, body.roomId!, body.emoji!);
+      return react(initData, body.roomId!, body.emoji);
     case 'chat':
-      return sendChat(initData!, body.roomId!, body.text!);
+      return sendChat(initData, body.roomId!, body.text);
     case 'rematch':
-      return rematchRoom(initData!, body.roomId!);
+      return rematchRoom(initData, body.roomId!);
     default:
       throw new Error('Unknown action');
   }

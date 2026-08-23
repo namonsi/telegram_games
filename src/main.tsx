@@ -5,14 +5,23 @@ import App from './App';
 import './index.css';
 
 if (!isTMA()) {
-  // ponytail: dev/browser fallback so the app runs outside Telegram
+  // ponytail: dev/browser fallback so the app runs outside Telegram.
+  // open ?u=2 in a second window to act as the partner; ?username=x spoofs a username.
+  const params = new URLSearchParams(window.location.search);
+  const alt = params.get('u') === '2';
+  const id = alt ? 222 : 123;
   mockTelegramEnv({
     launchParams: {
       tgWebAppVersion: '8.0',
       tgWebAppPlatform: 'tdesktop',
       tgWebAppThemeParams: {},
       tgWebAppData: new URLSearchParams([
-        ['user', JSON.stringify({ id: 123, first_name: 'Test', last_name: 'User', username: 'tester', language_code: 'en', is_premium: true })],
+        ['user', JSON.stringify({
+          id,
+          first_name: alt ? 'Partner' : 'Test',
+          username: params.get('username') ?? (alt ? 'partner' : 'namon_si'),
+          language_code: 'en',
+        })],
         ['hash', 'mock-hash'],
         ['auth_date', String(Math.floor(Date.now() / 1000))],
         ['signature', 'mock-signature'],
@@ -43,5 +52,6 @@ function me() {
     id: String(user?.id ?? 0),
     firstName: user?.first_name ?? 'Player',
     photoUrl: user?.photo_url,
+    username: user?.username,
   };
 }

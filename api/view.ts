@@ -50,16 +50,15 @@ function sanitizeKnowMe(room: KnowMeRoom, viewerId: string | null): KnowMeRoom {
     return { ...room, picks: {} };
   }
   const partner = otherPlayer(room.players, viewerId).id;
-  const mine = room.picks[viewerId] ?? blankPicks();
   // only the CURRENT round's question text leaks from the partner's set
   const shown = room.status === 'playing' ? currentQuestion(room) : null;
-  const picks = {
-    [viewerId]: mine,
-    [partner]: blankPicks().map((_, i) => ({
-      q: shown && i === Math.floor(room.round / 2) ? shown.q : '',
-      a: '',
-    })),
-  };
+  const picks: Record<string, KnowMePick[]> = {};
+  // absent key = not submitted yet — the client relies on this to show the picker
+  if (room.picks[viewerId]) picks[viewerId] = room.picks[viewerId];
+  picks[partner] = blankPicks().map((_, i) => ({
+    q: shown && i === Math.floor(room.round / 2) ? shown.q : '',
+    a: '',
+  }));
   return { ...room, picks };
 }
 

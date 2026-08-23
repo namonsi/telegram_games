@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { GameKind, Room } from '../game/types';
 import { api, inviteLink, type SurpriseKind } from '../api';
+import HowTo from './HowTo';
 
 type Me = { id: string; firstName: string; photoUrl?: string; username?: string };
 
@@ -121,6 +122,7 @@ export default function Lobby({ me, room, onCreated, onJoin, joinError }: Props)
       <button onClick={start} disabled={busy}>
         {busy ? 'Creating…' : `Start ${GAMES.find((g) => g.kind === kind)?.name}`}
       </button>
+      <HowTo kind={kind} />
 
       <div className="card">
         <p className="muted">Have a room link?</p>

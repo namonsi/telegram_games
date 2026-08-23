@@ -378,6 +378,18 @@ button.secondary {
   background: rgba(179, 167, 192, 0.12);
 }
 
+.board-grid.placing {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cell.draft {
+  background: rgba(255, 193, 75, 0.3);
+  border-color: var(--higher);
+  animation: pop 0.15s ease;
+}
+
 .cell:disabled {
   cursor: default;
 }
@@ -801,4 +813,93 @@ label.suspect.picked {
 
 .verdict-emoji {
   font-size: 40px;
+}
+
+/* ---------- how-to tutorial ---------- */
+
+.howto-btn {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 40;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--fg);
+  font-size: 18px;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+.howto-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: rgba(6, 3, 9, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fade 0.2s ease;
+}
+
+.howto-card {
+  position: relative;
+  width: min(420px, 92vw);
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--bg-2);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.5);
+  animation: pop 0.25s ease;
+}
+
+.howto-card h2 {
+  margin: 0 0 12px;
+  padding-right: 30px;
+}
+
+.howto-card ol {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.howto-card li {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--fg);
+}
+
+.howto-x {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.howto-x:hover {
+  color: var(--fg);
+  border-color: var(--accent-1);
+}
+
+.howto-foot {
+  text-align: center;
+  margin: 14px 0 0;
 }

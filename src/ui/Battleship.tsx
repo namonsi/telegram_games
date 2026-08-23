@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { BattleshipRoom } from '../game/types';
 import { api } from '../api';
 import { GRID_SIZE, SHIP_SIZES } from '../game/battleship';
@@ -26,37 +26,89 @@ export default function Battleship({ meId, room, onUpdate }: Props) {
 
 function Placement({ meId, room, onUpdate }: Props) {
   const [placed, setPlaced] = useState<number[][]>([]);
-  const [current, setCurrent] = useState<number[]>([]);
+  const [draft, setDraft] = useState<number[]>([]);
+  const draftRef = useRef<number[]>([]);
+  const draggingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const myShips = room.ships[meId];
   const other = room.players.find((p) => p.id !== meId);
-  const needSize = SHIP_SIZES[placed.length];
-  const allStaged = placed.length === SHIP_SIZES.length && current.length === needSize;
+  const needSize = SHIP_SIZES[placed.length] ?? 0;
+  const allStaged = placed.length === SHIP_SIZES.length - 1 && draft.length === needSize;
 
-  const tap = (cell: number) => {
-    if (current.includes(cell)) return setCurrent(current.filter((c) => c !== cell));
-    if (placed.flat().includes(cell)) return;
-    if (current.length >= needSize) return;
-    setCurrent([...current, cell]);
+  const setBoth = (cells: number[]) => {
+    draftRef.current = cells;
+    setDraft(cells);
+  };
+
+  const cellFromPoint = (x: number, y: number): number | null => {
+    const el = document.elementFromPoint(x, y) as HTMLElement | null;
+    const raw = el?.dataset?.cell;
+    return raw === undefined || raw === null ? null : Number(raw);
+  };
+
+  const onDown = (e: React.PointerEvent) => {
+    const cell = cellFromPoint(e.clientX, e.clientY);
+    if (cell === null || placed.flat().includes(cell)) return;
+    draggingRef.current = true;
+    setBoth([cell]);
     setError(null);
   };
 
-  const commitShip = async () => {
-    const all = [...placed, current];
+  const onMove = (e: React.PointerEvent) => {
+    if (!draggingRef.current) return;
+    const cell = cellFromPoint(e.clientX, e.clientY);
+    if (cell === null) return;
+    const prev = draftRef.current;
+    if (prev.includes(cell)) return;
+    const start = prev[0];
+    const sr = Math.floor(start / GRID_SIZE);
+    const sc = start % GRID_SIZE;
+    const r = Math.floor(cell / GRID_SIZE);
+    const c = cell % GRID_SIZE;
+    if (r !== sr && c !== sc) return; // straight lines only
+    const cells: number[] = [];
+    if (r === sr) {
+      for (let i = Math.min(sc, c); i <= Math.max(sc, c); i++) cells.push(sr * GRID_SIZE + i);
+    } else {
+      for (let i = Math.min(sr, r); i <= Math.max(sr, r); i++) cells.push(i * GRID_SIZE + sc);
+    }
+    if (cells.length > needSize) return;
+    if (cells.some((x) => placed.flat().includes(x))) return;
+    setBoth(cells);
+  };
+
+  const onUp = () => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    const cells = draftRef.current;
+    if (cells.length === needSize) {
+      const next = [...placed, cells];
+      setPlaced(next);
+      setBoth([]);
+      setError(null);
+      if (next.length === SHIP_SIZES.length && other) void commit(next);
+    } else {
+      setError(`Ships must be straight lines — drag across exactly ${needSize} cells`);
+    }
+  };
+
+  const commit = async (all: number[][]) => {
+    setBusy(true);
     setError(null);
     try {
       onUpdate(await api.placeShips(room.id, all));
     } catch (e) {
       setError((e as Error).message);
       setPlaced([]);
-      setCurrent([]);
+      setBoth([]);
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
   };
 
-  if (myShips || (!other && placed.length === SHIP_SIZES.length - 1 && current.length === needSize)) {
+  if (myShips || (!other && placed.length === SHIP_SIZES.length - 1 && draft.length === needSize)) {
     const ready = Boolean(myShips);
     return (
       <div className="screen">
@@ -64,7 +116,7 @@ function Placement({ meId, room, onUpdate }: Props) {
         {!ready ? (
           <>
             <p className="muted">Fleet ready! Invite your partner, then deploy.</p>
-            <button onClick={commitShip} disabled={busy}>
+            <button onClick={() => commit([...placed, draft])} disabled={busy}>
               {busy ? 'Deploying…' : 'Deploy fleet'}
             </button>
           </>
@@ -72,7 +124,7 @@ function Placement({ meId, room, onUpdate }: Props) {
           <p className="muted">Ships deployed. Waiting for {other?.firstName ?? 'your partner'} to place theirs…</p>
         )}
         {!other && <PartnerWait room={room} />}
-        <BoardView ships={myShips ?? [...placed, current]} />
+        <BoardView ships={myShips ?? [...placed, draft]} />
       </div>
     );
   }
@@ -81,21 +133,43 @@ function Placement({ meId, room, onUpdate }: Props) {
     <div className="screen">
       <h1>Battleship</h1>
       <p className="muted">
-        Place your ships — sizes {SHIP_SIZES.join(', ')}. Now placing the {needSize}-cell ship:{' '}
-        {current.length}/{needSize} cells tapped.
+        Place your ships — sizes {SHIP_SIZES.join(', ')}. Now the {needSize}-cell ship:{' '}
+        <b>press a cell and drag</b> across {needSize} in a line.
       </p>
-      <BoardView ships={placed} onCellTap={tap} />
+      <div
+        className="board-grid placing"
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        {Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, cell) => {
+          const inShip = placed.flat().includes(cell);
+          const inDraft = draft.includes(cell);
+          return (
+            <div
+              key={cell}
+              data-cell={cell}
+              className={`cell ${inShip ? 'ship' : ''} ${inDraft ? 'draft' : ''}`}
+              aria-label={`Cell ${cell}`}
+            >
+              {inDraft ? '🚢' : inShip ? '🚢' : ''}
+            </div>
+          );
+        })}
+      </div>
       {error && <p className="error">{error}</p>}
-      {allStaged && (
-        <button onClick={commitShip}>
-          {!other ? 'Deploy fleet' : 'Deploy fleet & start'}
+      {allStaged && !other && (
+        <button onClick={() => commit([...placed, draft])} disabled={busy}>
+          {busy ? 'Deploying…' : 'Deploy fleet'}
         </button>
       )}
-      {(current.length > 0 || placed.length > 0) && (
+      {(draft.length > 0 || placed.length > 0) && (
         <button
           className="secondary"
           onClick={() => {
-            if (current.length) setCurrent([]);
+            if (draft.length) setBoth([]);
             else setPlaced(placed.slice(0, -1));
           }}
         >
@@ -161,15 +235,7 @@ function Battle({ meId, room, onUpdate }: Props) {
   );
 }
 
-function BoardView({
-  ships,
-  onCellTap,
-  incomingShots,
-}: {
-  ships: number[][];
-  onCellTap?: (cell: number) => void;
-  incomingShots?: Map<number, boolean>;
-}) {
+function BoardView({ ships, incomingShots }: { ships: number[][]; incomingShots?: Map<number, boolean> }) {
   const shipCells = new Set(ships.flat());
   return (
     <div className="board-grid">
@@ -177,15 +243,9 @@ function BoardView({
         const inShip = shipCells.has(cell);
         const shot = incomingShots?.get(cell);
         return (
-          <button
-            key={cell}
-            className={`cell ${inShip ? 'ship' : ''} ${shot === true ? 'hit' : ''} ${shot === false ? 'miss' : ''}`}
-            onClick={() => onCellTap?.(cell)}
-            disabled={!onCellTap}
-            aria-label={`Cell ${cell}`}
-          >
+          <div key={cell} className={`cell ${inShip ? 'ship' : ''} ${shot === true ? 'hit' : ''} ${shot === false ? 'miss' : ''}`}>
             {shot === true ? '💥' : shot === false ? '💧' : inShip ? '🚢' : ''}
-          </button>
+          </div>
         );
       })}
     </div>

@@ -103,9 +103,15 @@ function PickPhase({ meId, room, onUpdate }: Props) {
       </label>
       <input value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Your secret answer…" maxLength={80} />
       {error && <p className="error">{error}</p>}
-      {picks.length < KNOW_ME_ROUNDS - 1 && <button onClick={add}>Next question</button>}
-      {picks.length === KNOW_ME_ROUNDS - 1 && (
-        <button onClick={add}>Add final question</button>
+      {picks.length < KNOW_ME_ROUNDS && (
+        <button onClick={add}>
+          {picks.length === KNOW_ME_ROUNDS - 1 ? 'Add final question' : 'Next question'}
+        </button>
+      )}
+      {picks.length === KNOW_ME_ROUNDS && (
+        <button onClick={lockIn} disabled={busy}>
+          {busy ? 'Locking…' : 'Lock answers in'}
+        </button>
       )}
       <ul className="history">
         {picks.map((c, i) => (

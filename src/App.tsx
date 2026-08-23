@@ -13,6 +13,7 @@ import TwentyQ from './ui/TwentyQ';
 import Mystery from './ui/Mystery';
 import QuizDuel from './ui/QuizDuel';
 import SurpriseGate from './ui/SurpriseGate';
+import HowTo from './ui/HowTo';
 
 type Me = { id: string; firstName: string; photoUrl?: string; username?: string };
 
@@ -108,6 +109,9 @@ export default function App({ me }: { me: Me }) {
   return (
     <>
       {screen()}
+      {room && KINDS.includes(room.kind) && (
+        <HowTo kind={room.kind} autoOpen={Boolean(startRoomId) && (!startGift || giftDone)} />
+      )}
       {startGift && !giftDone && (
         <SurpriseGate
           kind={startGift}

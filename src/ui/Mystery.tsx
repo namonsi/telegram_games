@@ -11,6 +11,8 @@ type Props = {
   onUpdate: (room: MysteryRoom) => void;
 };
 
+const CLUE_ICONS = ['🔎', '🧷', '📍', '💬', '🔦', '⏱️', '🧬', '🖼️'];
+
 export default function Mystery({ meId, room, onUpdate }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -53,87 +55,108 @@ export default function Mystery({ meId, room, onUpdate }: Props) {
   };
 
   return (
-    <div className="screen">
-      <h1>🕵️ {room.title}</h1>
-      <div className="card">
-        <p className="muted">{room.story}</p>
+    <div className={`screen casefile ${room.status === 'playing' ? '' : 'casefile-done'}`}>
+      <div className="folder-tab">CASE FILE · CONFIDENTIAL</div>
+      <div className="case-head">
+        <div className="case-scene">{room.scene}</div>
+        <h1>{room.title}</h1>
+        {solved && <div className="stamp stamp-solved">CASE CLOSED</div>}
+        {cold && <div className="stamp stamp-cold">COLD CASE</div>}
+      </div>
+
+      <div className="paper">
+        <p>{room.story}</p>
       </div>
 
       {room.status === 'playing' && <SocialBar room={room} onUpdate={onUpdate} />}
 
       <h3>
-        Clues {room.shown.length}/{room.clueCount} · Strikes {room.strikes}/{MAX_STRIKES}
+        Evidence board · {room.shown.length}/{room.clueCount} clues
+        <span className="strikes">
+          {Array.from({ length: MAX_STRIKES }, (_, i) => (
+            <span key={i} className={`pip ${i < room.strikes ? 'busted' : ''}`}>
+              ❤️
+            </span>
+          ))}
+        </span>
       </h3>
 
-      <ul className="history">
+      <div className="evidence-board">
         {room.shown.map((clue, i) => (
-          <li key={i}>
-            🔎 <b>Clue {i + 1}:</b> {clue}
-          </li>
+          <div key={i} className={`evidence-card tilt-${i % 2}`} style={{ background: 'var(--paper)' }}>
+            <span className="pin" />
+            <span className="evidence-icon">{CLUE_ICONS[i % CLUE_ICONS.length]}</span>
+            <p>
+              <b>Clue {i + 1}.</b> {clue}
+            </p>
+          </div>
         ))}
-        {room.shown.length === 0 && <li className="muted">No clues yet — start investigating!</li>}
-      </ul>
+        {room.shown.length === 0 && (
+          <p className="muted empty-board">Nothing pinned yet — start investigating! 🕵️‍♀️</p>
+        )}
+      </div>
 
       {error && <p className="error">{error}</p>}
 
+      {solved && (
+        <div className="verdict-card solved">
+          <span className="verdict-emoji">🎉</span>
+          <h2>You cracked the case!</h2>
+          {room.solution && <p className="muted">{room.solution}</p>}
+        </div>
+      )}
       {cold && (
-        <div className="card">
-          <h2>Case gone cold 💔</h2>
-          <p className="muted">Three strikes. The culprit walked free… this time.</p>
+        <div className="verdict-card cold">
+          <span className="verdict-emoji">💔</span>
+          <h2>The trail went cold…</h2>
           {room.solution && (
             <p className="muted">
-              <b>Solution:</b> {room.solution}
+              <b>What really happened:</b> {room.solution}
             </p>
           )}
         </div>
       )}
-      {solved && (
-        <div className="card">
-          <h2>Solved together! 🎉</h2>
-          {room.solution && <p className="muted">{room.solution}</p>}
-        </div>
-      )}
 
       {room.status === 'playing' && !accusing && (
-        <button onClick={investigate} disabled={busy || !myTurn}>
-          {myTurn
-            ? room.shown.length >= room.clueCount
-              ? 'All clues found — accuse below'
-              : '🔍 Investigate next clue'
-            : `Waiting for ${other?.firstName ?? 'partner'}…`}
-        </button>
+        <>
+          <button onClick={investigate} disabled={busy || !myTurn}>
+            {myTurn
+              ? room.shown.length >= room.clueCount
+                ? 'All clues found — accuse below 👇'
+                : `🔍 Investigate clue ${Math.min(room.shown.length + 1, room.clueCount)}`
+              : `${other?.firstName ?? 'Partner'} is on the case…`}
+          </button>
+          <button className="secondary" onClick={() => setAccusing(true)} disabled={!myTurn}>
+            🚨 Ready to name the culprit
+          </button>
+        </>
       )}
 
-      {room.status === 'playing' &&
-        (accusing ? (
-          <>
-            <h3>Point the finger</h3>
-            <ul className="history">
-              {room.suspects.map((s) => (
-                <li key={s.id}>
-                  <label className={`suspect ${pick === s.id ? 'picked' : ''}`}>
-                    <input type="radio" name="suspect" checked={pick === s.id} onChange={() => setPick(s.id)} />
-                    <span>
-                      <b>{s.name}</b>
-                      <br />
-                      <span className="muted">{s.blurb}</span>
-                    </span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-            <button onClick={accuse} disabled={busy || !pick}>
-              Accuse! (a miss costs a strike)
-            </button>
-            <button className="secondary" onClick={() => setAccusing(false)}>
-              Back to investigating
-            </button>
-          </>
-        ) : (
-          <button className="secondary" onClick={() => setAccusing(true)} disabled={!myTurn}>
-            🚨 Ready to accuse someone
+      {room.status === 'playing' && accusing && (
+        <>
+          <h3>Suspect line-up — who did it?</h3>
+          <div className="suspect-row">
+            {room.suspects.map((s) => (
+              <button
+                key={s.id}
+                className={`suspect-card ${pick === s.id ? 'picked' : ''}`}
+                onClick={() => setPick(s.id)}
+                style={{ ['--sc' as string]: s.color ?? '#555' }}
+              >
+                <span className="suspect-avatar">{s.avatar ?? '🧑'}</span>
+                <b>{s.name}</b>
+                <span className="muted">{s.blurb}</span>
+              </button>
+            ))}
+          </div>
+          <button onClick={accuse} disabled={busy || !pick}>
+            Accuse! (a miss costs a heart)
           </button>
-        ))}
+          <button className="secondary" onClick={() => setAccusing(false)}>
+            Back to investigating
+          </button>
+        </>
+      )}
     </div>
   );
 }

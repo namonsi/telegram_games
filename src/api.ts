@@ -68,6 +68,7 @@ export const api = {
 };
 
 export function inviteLink(roomId: string, gift?: SurpriseKind): string {
-  const start = gift ? `${roomId}~${gift}` : roomId;
+  // "_" separator: Telegram strips most punctuation from startapp params
+  const start = gift ? `${roomId}_${gift}` : roomId;
   return `https://t.me/${BOT_USERNAME}?startapp=${encodeURIComponent(start)}`;
 }

@@ -30,11 +30,13 @@ export default function App({ me }: { me: Me }) {
     if (polled) setRoom(polled);
   }, [polled]);
 
-  // invite links carry "~<surprise>" after the room id when a surprise was attached
+  // invites carry "_<surprise>" after the room id ("_" survives Telegram's startapp sanitizing)
   const [startRoomId, startGift] = useMemo(() => {
     const param = initData.startParam() ?? new URLSearchParams(window.location.search).get('startapp') ?? '';
-    const [id, gift] = param.split('~');
-    return [id || null, gift === 'note' || gift === 'gift' || gift === 'random' ? (gift as SurpriseKind) : null];
+    const sep = param.lastIndexOf('_');
+    const id = sep > 0 ? param.slice(0, sep) : param || null;
+    const raw = sep > 0 ? param.slice(sep + 1) : '';
+    return [id, raw === 'note' || raw === 'gift' || raw === 'random' ? (raw as SurpriseKind) : null];
   }, []);
 
   const join = useCallback(

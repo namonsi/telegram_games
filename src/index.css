@@ -567,3 +567,238 @@ label.suspect.picked {
   font-size: 16px;
   margin: 10px 0 6px;
 }
+
+/* ---------- murder mystery case file ---------- */
+
+.casefile {
+  --paper: #f5ecd7;
+}
+
+.folder-tab {
+  align-self: flex-start;
+  background: #c9a86a;
+  color: #3d2f14;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  padding: 6px 14px 4px;
+  border-radius: 8px 8px 0 0;
+}
+
+.case-head {
+  position: relative;
+  background: linear-gradient(160deg, #e8d9b5, #d9c491);
+  border-radius: 0 var(--radius) var(--radius) var(--radius);
+  padding: 16px;
+  box-shadow: inset 0 0 40px rgba(120, 90, 30, 0.25);
+}
+
+.case-scene {
+  font-size: 34px;
+  letter-spacing: 10px;
+  text-align: center;
+  padding-bottom: 8px;
+  filter: drop-shadow(0 2px 3px rgba(60, 40, 10, 0.35));
+}
+
+.case-head h1 {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  color: #3d2f14;
+  font-size: 24px;
+  text-align: center;
+}
+
+.stamp {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  transform: rotate(12deg);
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  border: 3px double currentColor;
+  border-radius: 6px;
+  padding: 4px 10px;
+  animation: stampIn 0.35s cubic-bezier(0.2, 2, 0.4, 1);
+}
+
+@keyframes stampIn {
+  from { transform: rotate(12deg) scale(2.4); opacity: 0; }
+  to { transform: rotate(12deg) scale(1); opacity: 1; }
+}
+
+.stamp-solved {
+  color: #1d7a3d;
+  background: rgba(29, 122, 61, 0.08);
+}
+
+.stamp-cold {
+  color: #b02a2a;
+  background: rgba(176, 42, 42, 0.08);
+}
+
+.paper {
+  background: var(--paper);
+  color: #42351a;
+  border-radius: 12px;
+  padding: 16px 18px;
+  font-family: Georgia, serif;
+  line-height: 1.6;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25), inset 0 0 60px rgba(150, 120, 50, 0.12);
+  transform: rotate(-0.6deg);
+}
+
+.paper p {
+  margin: 0;
+  font-size: 14.5px;
+}
+
+.strikes {
+  float: right;
+  letter-spacing: 2px;
+}
+
+.pip {
+  filter: grayscale(0) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+  transition: all 0.3s;
+}
+
+.pip.busted {
+  filter: grayscale(1) opacity(0.45);
+  transform: scale(0.85) rotate(-20deg);
+}
+
+.evidence-board {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.empty-board {
+  text-align: center;
+  padding: 12px;
+}
+
+.evidence-card {
+  position: relative;
+  color: #42351a;
+  border-radius: 4px;
+  padding: 12px 14px 12px 44px;
+  font-family: Georgia, serif;
+  font-size: 13.5px;
+  line-height: 1.55;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.35);
+  animation: pinDrop 0.4s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+
+@keyframes pinDrop {
+  from { transform: translateY(-14px) rotate(0deg); opacity: 0; }
+}
+
+.evidence-card.tilt-0 { transform: rotate(-1.1deg); }
+.evidence-card.tilt-1 { transform: rotate(1deg); }
+
+.evidence-card p {
+  margin: 0;
+}
+
+.pin {
+  position: absolute;
+  top: -6px;
+  left: 16px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ff8ba0, #c81e3c 70%);
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.45);
+}
+
+.evidence-icon {
+  position: absolute;
+  left: 12px;
+  bottom: 8px;
+  font-size: 18px;
+  opacity: 0.75;
+}
+
+.suspect-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.suspect-card {
+  --sc: #555;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--sc) 38%, transparent), transparent 70%),
+    var(--bg-2);
+  border: 1px solid color-mix(in srgb, var(--sc) 55%, transparent);
+  border-radius: var(--radius);
+  color: var(--fg);
+  font-weight: 400;
+  padding: 14px 10px;
+  text-align: center;
+}
+
+.suspect-card .suspect-avatar {
+  font-size: 38px;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.22), transparent 60%), var(--sc);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--sc) 45%, transparent);
+}
+
+.suspect-card b {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.suspect-card .muted {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.suspect-card.picked {
+  border-color: var(--accent-1);
+  box-shadow: 0 0 0 3px rgba(255, 93, 143, 0.3);
+}
+
+.suspect-card.picked::after {
+  content: '🎯';
+  position: absolute;
+  margin-top: -52px;
+  font-size: 20px;
+}
+
+.verdict-card {
+  border-radius: var(--radius);
+  padding: 18px;
+  text-align: center;
+  animation: pop 0.4s ease;
+}
+
+.verdict-card.solved {
+  background: rgba(61, 240, 140, 0.09);
+  border: 1px solid rgba(61, 240, 140, 0.35);
+}
+
+.verdict-card.cold {
+  background: rgba(255, 93, 108, 0.08);
+  border: 1px solid rgba(255, 93, 108, 0.3);
+}
+
+.verdict-emoji {
+  font-size: 40px;
+}

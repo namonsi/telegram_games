@@ -7,13 +7,14 @@ export const MYSTERY_CASES: MysteryCase[] = [
   {
     id: 'ring',
     title: 'The Vanished Ring',
+    scene: '💍🌙🏡✨',
     story:
       'During a villa dinner party, Grandma Ada\'s engagement ring disappeared from the locked bedroom upstairs between 8:00 and 10:00 pm. The jewelry box was untouched except for the empty ring slot, and the bedroom door was still locked afterward — opened only with a four-digit code. Four people had access to the code. One of them took it.',
     suspects: [
-      { id: 'marco', name: 'Marco the Waiter', blurb: 'Served the dinner table all night. Polite, quick, everywhere.' },
-      { id: 'elena', name: 'Elena the Sister', blurb: 'Hosted the party. Upstairs twice early evening, then downstairs.' },
-      { id: 'tessa', name: 'Tessa the Best Friend', blurb: 'Maid of honor. Knew the code too — "Ada made me memorize it."' },
-      { id: 'ravi', name: 'Ravi the Gardener', blurb: 'Finished trimming hedges at dusk. Left before dinner started.' },
+      { id: 'marco', name: 'Marco the Waiter', blurb: 'Served the dinner table all night. Polite, quick, everywhere.', avatar: '🍽️', color: '#4a7ba6' },
+      { id: 'elena', name: 'Elena the Sister', blurb: 'Hosted the party. Upstairs twice early evening, then downstairs.', avatar: '💃', color: '#a64a7b' },
+      { id: 'tessa', name: 'Tessa the Best Friend', blurb: 'Maid of honor. Knew the code too — "Ada made me memorize it."', avatar: '👰', color: '#8a6d3b' },
+      { id: 'ravi', name: 'Ravi the Gardener', blurb: 'Finished trimming hedges at dusk. Left before dinner started.', avatar: '🌿', color: '#4a7b52' },
     ],
     clues: [
       'The ring was last seen at 7:45 pm when Ada put it in the box before going down to greet guests.',
@@ -35,10 +36,10 @@ export const MYSTERY_CASES: MysteryCase[] = [
     story:
       'Pop duo Nova&June finished their secret single "Midnight Coffee" on Friday. By Monday morning it was trending on a leak forum — two days before its premiere. The studio copy lived on one laptop, played exactly three times. Whoever leaked it had studio access that weekend.',
     suspects: [
-      { id: 'dev', name: 'Dev the Producer', blurb: 'Mixed the track. Left Friday 11 pm, says he "went straight home."' },
-      { id: 'pip', name: 'Pip the Intern', blurb: 'Cleans the studio weekends. Has building keys but no laptop password.' },
-      { id: 'sol', name: 'Sol the Label Exec', blurb: 'Was in Miami at a conference all weekend — allegedly.' },
-      { id: 'reina', name: 'Reina the Neighbor', blurb: 'Runs the coffee cart downstairs. Close with both artists.' },
+      { id: 'dev', name: 'Dev the Producer', blurb: 'Mixed the track. Left Friday 11 pm, says he "went straight home."', avatar: '🎚️', color: '#6b4aa6' },
+      { id: 'pip', name: 'Pip the Intern', blurb: 'Cleans the studio weekends. Has building keys but no laptop password.', avatar: '🧹', color: '#3b8a8a' },
+      { id: 'sol', name: 'Sol the Label Exec', blurb: 'Was in Miami at a conference all weekend — allegedly.', avatar: '🕶️', color: '#a6744a' },
+      { id: 'reina', name: 'Reina the Neighbor', blurb: 'Runs the coffee cart downstairs. Close with both artists.', avatar: '☕', color: '#a64a4a' },
     ],
     clues: [
       'The leak appeared online Sunday at 11:52 pm, tagged "recorded off-speakers, sorry for background hum."',
@@ -60,10 +61,10 @@ export const MYSTERY_CASES: MysteryCase[] = [
     story:
       'The Moonlight Picnic Club meets every full moon on the Harlow Building rooftop. Three meetings in a row something vanished: a tin of cookies, a bottle of elderflower cordial, and finally a silver lantern. Same pattern each time — items taken mid-evening, while everyone was watching the city lights. Five regular members, one of them a repeat thief.',
     suspects: [
-      { id: 'nadia', name: 'Nadia the Organizer', blurb: 'Brings the baskets, sets the blankets, never sits down.' },
-      { id: 'oskar', name: 'Oskar the Photographer', blurb: 'Shoots long exposures from the far corner most of the night.' },
-      { id: 'june', name: 'June the Baker', blurb: 'Made the cookie tin herself. Sits closest to the snack basket.' },
-      { id: 'felix', name: 'Felix the Newcomer', blurb: 'Joined this season. Charming. Always first to suggest stargazing.' },
+      { id: 'nadia', name: 'Nadia the Organizer', blurb: 'Brings the baskets, sets the blankets, never sits down.', avatar: '🧺', color: '#7b4aa6' },
+      { id: 'oskar', name: 'Oskar the Photographer', blurb: 'Shoots long exposures from the far corner most of the night.', avatar: '📷', color: '#4a4a7b' },
+      { id: 'june', name: 'June the Baker', blurb: 'Made the cookie tin herself. Sits closest to the snack basket.', avatar: '🍪', color: '#a6854a' },
+      { id: 'felix', name: 'Felix the Newcomer', blurb: 'Joined this season. Charming. Always first to suggest stargazing.', avatar: '✨', color: '#4a8a6d' },
     ],
     clues: [
       'All three thefts happened within ten minutes of Felix calling everyone over to "look at that constellation."',

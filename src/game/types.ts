@@ -78,7 +78,7 @@ export type TwentyRoom = Base & {
   log: TwentyEntry[];
 };
 
-export type Suspect = { id: string; name: string; blurb: string };
+export type Suspect = { id: string; name: string; blurb: string; avatar?: string; color?: string };
 
 export type MysteryRoom = Base & {
   kind: 'mystery';
@@ -87,6 +87,8 @@ export type MysteryRoom = Base & {
   title: string;
   story: string;
   suspects: Suspect[];
+  /** emoji scene strip for the case banner */
+  scene: string;
   revealed: number;
   clueCount: number;
   strikes: number;

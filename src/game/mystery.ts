@@ -1,7 +1,7 @@
 import type { MysteryRoom, Player, Suspect } from './types.js';
 import { otherPlayer } from './engine.js';
 
-export type CaseMeta = { title: string; story: string; suspects: Suspect[]; clues: string[] };
+export type CaseMeta = { title: string; story: string; suspects: Suspect[]; clues: string[]; scene?: string };
 
 export function createMystery(id: string, creator: Player, caseIndex: number, meta: CaseMeta): MysteryRoom {
   return {
@@ -13,6 +13,7 @@ export function createMystery(id: string, creator: Player, caseIndex: number, me
     title: meta.title,
     story: meta.story,
     suspects: meta.suspects,
+    scene: meta.scene ?? '🕯️🔎',
     revealed: 0,
     clueCount: meta.clues.length,
     strikes: 0,
@@ -33,6 +34,7 @@ export function startCase(room: MysteryRoom, caseIndex: number, meta: CaseMeta):
     title: meta.title,
     story: meta.story,
     suspects: meta.suspects,
+    scene: meta.scene ?? '🕯️🔎',
     clueCount: meta.clues.length,
     revealed: 0,
     strikes: 0,

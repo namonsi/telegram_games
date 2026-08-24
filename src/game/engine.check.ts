@@ -77,11 +77,18 @@ assert.equal(knowme.currentQuestion(km)?.q, 'Q0?', 'round 0 asks alice question 
 for (let r = 0; r < knowme.KNOW_ME_ROUNDS * 2; r++) {
   const guesser = km.turn;
   const secret = r % 2 === 0 ? picksA[Math.floor(r / 2)].a : picksB[Math.floor(r / 2)].a;
-  km = knowme.answerKnowMe(km, guesser, secret);
+  // near-miss on round 2: bob answers "cat" for alice's "answer-1" — she accepts it later
+  const given = r === 2 ? 'cat (near miss)' : secret;
+  km = knowme.answerKnowMe(km, guesser, given);
 }
 assert.equal(km.status, 'finished', 'all rounds done');
 assert.equal(km.log.length, knowme.KNOW_ME_ROUNDS * 2, 'ten entries logged');
-assert.equal(km.winner, null, 'perfect mirror play is a draw');
+assert.equal(km.winner, 'a', 'alice leads before the acceptance');
+assert.throws(() => knowme.acceptKnowMe(km, 'b', 2), /question owner/, 'guesser cannot self-accept');
+km = knowme.acceptKnowMe(km, 'a', 2);
+assert.equal(km.log[2].correct, true, 'asker accepted the near miss');
+assert.equal(km.winner, null, 'acceptance turns the win into a draw');
+assert.throws(() => knowme.acceptKnowMe(km, 'a', 2), /Already counted/, 'no double accept');
 km = knowme.rematchKnowMe(km);
 assert.equal(km.status, 'setup', 'knowme rematch to setup');
 

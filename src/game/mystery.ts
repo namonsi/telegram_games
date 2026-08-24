@@ -39,6 +39,7 @@ export function startCase(room: MysteryRoom, caseIndex: number, meta: CaseMeta):
     revealed: 0,
     strikes: 0,
     shown: [],
+    chatLog: [],
     winner: null,
     turn: room.players[0].id,
     status: 'playing',

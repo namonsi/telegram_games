@@ -8,7 +8,7 @@ import * as quiz from '../src/game/quiz.js';
 import type { GameKind, KnowMePick, Player, Range, Room } from '../src/game/types.js';
 import { MYSTERY_CASES } from './mysteryCases.js';
 import { QUIZ_BANK } from './quizBank.js';
-import { getRoom, putRoom } from './store.js';
+import { getRoom, putRoom, addGameRecord } from './store.js';
 import { sanitizeRoom } from './view.js';
 
 const REACTION_TTL = 6000;
@@ -53,6 +53,21 @@ async function withRoom(initData: string | undefined, roomId: string, fn: (room:
   if (!room.players.some((p) => p.id === userId)) throw new Error('You are not in this room');
   const updated = fn(room, userId);
   await putRoom(updated);
+  // a game just ended -> log it for the /admin page
+  if (room.status !== 'finished' && updated.status === 'finished') {
+    await addGameRecord({
+      id: updated.id,
+      kind: updated.kind,
+      players: updated.players.map((p) => ({
+        id: p.id,
+        tgId: p.telegram.tgId,
+        firstName: p.firstName,
+        username: p.telegram.username,
+      })),
+      winner: updated.winner,
+      endedAt: Date.now(),
+    }).catch(() => {});
+  }
   return sanitizeRoom(updated, userId);
 }
 
@@ -156,6 +171,13 @@ export async function answerKnowMe(initData: string | undefined, roomId: string,
   return withRoom(initData, roomId, (room, userId) => {
     if (room.kind !== 'knowme') throw new Error('Wrong game');
     return knowme.answerKnowMe(room, userId, text ?? '');
+  });
+}
+
+export async function acceptKnowMeAnswer(initData: string | undefined, roomId: string, round: number | undefined): Promise<Room> {
+  return withRoom(initData, roomId, (room, userId) => {
+    if (room.kind !== 'knowme') throw new Error('Wrong game');
+    return knowme.acceptKnowMe(room, userId, finite(round, 'round'));
   });
 }
 

@@ -71,7 +71,7 @@ export function guess(room: NumberRoom, playerId: string, value: number): { room
 
 export function rematch(room: NumberRoom): NumberRoom {
   if (room.status !== 'finished') throw new Error('Game is not finished');
-  return { ...room, targets: {}, history: [], winner: null, turn: room.players[0].id, status: 'setup' };
+  return { ...room, targets: {}, history: [], chatLog: [], winner: null, turn: room.players[0].id, status: 'setup' };
 }
 
 export function setReaction<T extends { reaction: Reaction | null }>(room: T, emoji: string, ttlMs: number, now = Date.now()): T {
@@ -79,7 +79,15 @@ export function setReaction<T extends { reaction: Reaction | null }>(room: T, em
   return { ...room, reaction };
 }
 
-export function setChat<T extends { chat: Chat | null }>(room: T, text: string, sender: string, ttlMs: number, now = Date.now()): T {
+export function setChat<T extends { chat: Chat | null; chatLog?: { sender: string; text: string; at: number }[] }>(
+  room: T,
+  text: string,
+  sender: string,
+  ttlMs: number,
+  now = Date.now(),
+): T {
   const chat: Chat = { text, sender, expiresAt: now + ttlMs };
-  return { ...room, chat };
+  // ponytail: cap at 100 messages — a couple's chat will never hit that in one game
+  const chatLog = [...(room.chatLog ?? []).slice(-99), { sender, text, at: now }];
+  return { ...room, chat, chatLog };
 }

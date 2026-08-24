@@ -33,6 +33,8 @@ type Base = {
   status: RoomStatus;
   reaction: Reaction | null;
   chat: Chat | null;
+  /** full chat history for the room; cleared when a new game starts */
+  chatLog?: { sender: string; text: string; at: number }[];
   stats: PairStats;
 };
 
@@ -76,6 +78,8 @@ export type TwentyRoom = Base & {
   used: number;
   question: string | null;
   log: TwentyEntry[];
+  /** latest wrong final guess — feedback for both players */
+  lastGuess?: { text: string; byId: string } | null;
 };
 
 export type Suspect = { id: string; name: string; blurb: string; avatar?: string; color?: string };

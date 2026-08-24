@@ -86,7 +86,24 @@ export function answerKnowMe(room: KnowMeRoom, playerId: string, text: string): 
   return next;
 }
 
+/** the asker counts a near-miss guess ("cat" vs "cats") as correct; recounts the result if done */
+export function acceptKnowMe(room: KnowMeRoom, playerId: string, round: number): KnowMeRoom {
+  if (room.status !== 'playing' && room.status !== 'finished') throw new Error('Game is not in progress');
+  if (!Number.isInteger(round) || round < 0 || round >= room.log.length) throw new Error('Invalid round');
+  const asker = room.players[round % 2];
+  if (asker.id !== playerId) throw new Error('Only the question owner can accept an answer');
+  if (room.log[round].correct) throw new Error('Already counted as correct');
+  const log = room.log.map((e, i) => (i === round ? { ...e, correct: true } : e));
+  const next: KnowMeRoom = { ...room, log };
+  if (next.status !== 'finished') return next;
+  const hits = (id: string) => log.filter((e) => e.byId === id && e.correct).length;
+  const [a, b] = next.players;
+  const ha = hits(a.id);
+  const hb = hits(b.id);
+  return { ...next, winner: ha === hb ? null : ha > hb ? a.id : b.id };
+}
+
 export function rematchKnowMe(room: KnowMeRoom): KnowMeRoom {
   if (room.status !== 'finished') throw new Error('Game is not finished');
-  return { ...room, picks: {}, round: 0, log: [], winner: null, turn: '', status: 'setup' };
+  return { ...room, picks: {}, round: 0, log: [], chatLog: [], winner: null, turn: '', status: 'setup' };
 }

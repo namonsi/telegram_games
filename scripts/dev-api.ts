@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { createServer } from 'node:http';
 import gameHandler from '../api/game';
 import roomHandler from '../api/room';
+import adminHandler from '../api/admin';
 
 // ponytail: local stand-in for Vercel; wires the same api/ handlers with CORS
 // so the Vite client (5173) can hit them. Vercel does the real job in prod.
@@ -60,6 +61,7 @@ createServer((req, res) => {
     const url = req.url ?? '/';
     if (url.startsWith('/api/game')) return void gameHandler(rreq, rres);
     if (url.startsWith('/api/room')) return void roomHandler(rreq, rres);
+    if (url.startsWith('/api/admin')) return void adminHandler(rreq, rres);
     rres.status(404).json({ error: 'Not found' });
   });
 }).listen(PORT, () => console.log(`Dev API on http://localhost:${PORT}`));

@@ -74,15 +74,30 @@ export function guessSecret(room: TwentyRoom, playerId: string, text: string): {
   if (room.status !== 'playing') throw new Error('Game is not in progress');
   if (playerId === room.answererId) throw new Error('You know the secret already!');
   if (room.used >= TWENTY_MAX) throw new Error('No guesses left');
-  const correct = normalizeSecret(text.trim()) === normalizeSecret(room.secret);
+  const clean = text.trim();
+  const correct = normalizeSecret(clean) === normalizeSecret(room.secret);
   let next: TwentyRoom = { ...room, used: room.used + 1 };
   if (correct) next = finish(next, playerId);
-  else if (next.used >= TWENTY_MAX) next = finish(next, next.answererId);
+  else {
+    next = { ...next, lastGuess: { text: clean, byId: playerId } };
+    if (next.used >= TWENTY_MAX) next = finish(next, next.answererId);
+  }
   return { room: next, correct };
 }
 
 export function rematchTwenty(room: TwentyRoom): TwentyRoom {
   if (room.status !== 'finished') throw new Error('Game is not finished');
   const swapped = otherPlayer(room.players, room.answererId).id;
-  return { ...room, answererId: swapped, secret: '', used: 0, question: null, log: [], winner: null, status: 'setup' };
+  return {
+    ...room,
+    answererId: swapped,
+    secret: '',
+    used: 0,
+    question: null,
+    log: [],
+    lastGuess: null,
+    chatLog: [],
+    winner: null,
+    status: 'setup',
+  };
 }

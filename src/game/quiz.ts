@@ -88,6 +88,7 @@ export function rematchQuiz(room: QuizRoom, bankSize: number): QuizRoom {
     picks: {},
     scores: {},
     results: [],
+    chatLog: [],
     winner: null,
     turn: '',
     status: 'playing',

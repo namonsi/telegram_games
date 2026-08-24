@@ -13,6 +13,30 @@ type Props = {
   onUpdate: (room: KnowMeRoom) => void;
 };
 
+/** round i was answered wrong and I asked it -> let me count it as correct */
+function AcceptButton({ room, meId, round, onUpdate }: { room: KnowMeRoom; meId: string; round: number; onUpdate: (r: KnowMeRoom) => void }) {
+  const entry = room.log[round];
+  const isAsker = room.players[round % 2]?.id === meId;
+  const [busy, setBusy] = useState(false);
+  if (!entry || entry.correct || !isAsker) return null;
+  return (
+    <button
+      className="mini-btn"
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          onUpdate(await api.acceptKnowMe(room.id, round));
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      ✔ count as correct
+    </button>
+  );
+}
+
 export default function KnowMe({ meId, room, onUpdate }: Props) {
   switch (room.status) {
     case 'waiting':
@@ -29,6 +53,7 @@ export default function KnowMe({ meId, room, onUpdate }: Props) {
 function PickPhase({ meId, room, onUpdate }: Props) {
   const [picks, setPicks] = useState<{ q: string; a: string }[]>([]);
   const [question, setQuestion] = useState('');
+  const [custom, setCustom] = useState('');
   const [answer, setAnswer] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -37,10 +62,13 @@ function PickPhase({ meId, room, onUpdate }: Props) {
   const other = room.players.find((p) => p.id !== meId);
 
   const add = () => {
-    if (!question || !answer.trim()) return setError('Pick a question and write your secret answer');
+    const q = custom.trim() || question;
+    if (!q || !answer.trim()) return setError('Pick (or write) a question and write your secret answer');
+    if (picks.some((p) => p.q === q)) return setError('You already picked that question');
     setError(null);
-    setPicks([...picks, { q: question, a: answer.trim() }]);
+    setPicks([...picks, { q, a: answer.trim() }]);
     setQuestion('');
+    setCustom('');
     setAnswer('');
   };
 
@@ -101,6 +129,12 @@ function PickPhase({ meId, room, onUpdate }: Props) {
           ))}
         </select>
       </label>
+      <input
+        value={custom}
+        onChange={(e) => setCustom(e.target.value)}
+        placeholder="…or write your own question"
+        maxLength={140}
+      />
       <input value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Your secret answer…" maxLength={80} />
       {error && <p className="error">{error}</p>}
       {picks.length < KNOW_ME_ROUNDS && (
@@ -183,6 +217,7 @@ function PlayPhase({ meId, room, onUpdate }: Props) {
         {room.log.map((e, i) => (
           <li key={i}>
             {e.correct ? '✅' : '❌'} {e.text}
+            <AcceptButton room={room} meId={meId} round={i} onUpdate={onUpdate} />
           </li>
         ))}
       </ul>
@@ -217,6 +252,7 @@ function Result({ meId, room, onUpdate }: Props) {
                 <br />
                 {a.id === meId ? 'You' : a.firstName}: “{pick?.a ?? '?'}” · guessed “{entry?.text ?? '-'}”{' '}
                 {entry?.correct ? '✅' : '❌'}
+                <AcceptButton room={room} meId={meId} round={round} onUpdate={onUpdate} />
               </li>
             );
           })}

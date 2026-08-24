@@ -92,5 +92,5 @@ export function fire(room: BattleshipRoom, playerId: string, cell: number): { ro
 
 export function rematchBattleship(room: BattleshipRoom): BattleshipRoom {
   if (room.status !== 'finished') throw new Error('Game is not finished');
-  return { ...room, ships: {}, shots: [], winner: null, turn: '', status: 'setup' };
+  return { ...room, ships: {}, shots: [], chatLog: [], winner: null, turn: '', status: 'setup' };
 }

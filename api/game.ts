@@ -1,4 +1,5 @@
 import {
+  acceptKnowMeAnswer,
   accuse,
   answerKnowMe,
   answerQuiz,
@@ -28,6 +29,7 @@ type Body = {
     | 'guess'
     | 'submitPicks'
     | 'answerKnowMe'
+    | 'acceptKnowMe'
     | 'placeShips'
     | 'fire'
     | 'setSecret'
@@ -54,6 +56,7 @@ type Body = {
   verdict?: string;
   suspectId?: string;
   choice?: number;
+  round?: number;
   emoji?: string;
   firstName?: string;
 };
@@ -106,6 +109,8 @@ async function run(body: Body, initData: string | undefined): Promise<unknown> {
       return submitKnowMePicks(initData, body.roomId!, body.picks);
     case 'answerKnowMe':
       return answerKnowMe(initData, body.roomId!, body.text);
+    case 'acceptKnowMe':
+      return acceptKnowMeAnswer(initData, body.roomId!, body.round);
     case 'placeShips':
       return placeShips(initData, body.roomId!, body.ships);
     case 'fire':

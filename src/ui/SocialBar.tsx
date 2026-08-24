@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Room } from '../game/types';
 import { api } from '../api';
 
@@ -9,12 +9,14 @@ type Props<T extends Room> = {
   onUpdate: (room: T) => void;
 };
 
-/** shared bubbles + reaction bar + chat row used by every game board */
+/** shared bubbles + reaction bar + chat row + chat history, used by every game board */
 export default function SocialBar<T extends Room>({ room, onUpdate }: Props<T>) {
   const [text, setText] = useState('');
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const reaction = room.reaction && room.reaction.expiresAt > Date.now() ? room.reaction : null;
   const chat = room.chat && room.chat.expiresAt > Date.now() ? room.chat : null;
+  const chatLog = room.chatLog ?? [];
 
   // ponytail: local TTL so the bubble can fade before the next 2s poll clears it
   const [bubbleKey, setBubbleKey] = useState(0);
@@ -58,6 +60,45 @@ export default function SocialBar<T extends Room>({ room, onUpdate }: Props<T>) 
           Send
         </button>
       </div>
+
+      {chatLog.length > 0 && (
+        <button className="secondary chat-history-btn" onClick={() => setHistoryOpen(true)}>
+          💬 Chat history ({chatLog.length})
+        </button>
+      )}
+
+      {historyOpen && <ChatHistory log={chatLog} onClose={() => setHistoryOpen(false)} />}
     </>
+  );
+}
+
+function ChatHistory({ log, onClose }: { log: { sender: string; text: string; at: number }[]; onClose: () => void }) {
+  const endRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    endRef.current?.scrollIntoView();
+  }, []);
+
+  return (
+    <div className="howto-overlay" onClick={onClose} role="dialog" aria-label="Chat history">
+      <div className="howto-card chat-history" onClick={(e) => e.stopPropagation()}>
+        <button className="howto-x" onClick={onClose} aria-label="Close chat history">
+          ✕
+        </button>
+        <h2>💬 Chat history</h2>
+        <ul className="chat-log">
+          {log.map((m, i) => (
+            <li key={i}>
+              <span className="chat-time">
+                {new Date(m.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+              <span>
+                <b>{m.sender}</b> {m.text}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div ref={endRef} />
+      </div>
+    </div>
   );
 }

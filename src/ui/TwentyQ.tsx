@@ -106,6 +106,13 @@ function Play({ meId, room, onUpdate }: Props) {
 
       <SocialBar room={room} onUpdate={onUpdate} />
 
+      {room.lastGuess && (
+        <div className="card hint-lower">
+          ❌ <b>{room.players.find((p) => p.id === room.lastGuess?.byId)?.firstName ?? 'They'}</b> guessed “
+          {room.lastGuess.text}” — wrong! {TWENTY_MAX - room.used} chances left.
+        </div>
+      )}
+
       {iAnswer ? (
         room.question ? (
           <div className="card">

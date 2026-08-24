@@ -21,6 +21,7 @@ type Body = {
   verdict?: string;
   suspectId?: string;
   choice?: number;
+  round?: number;
   emoji?: string;
   firstName?: string;
 };
@@ -53,6 +54,7 @@ export const api = {
   guess: (roomId: string, guess: number) => post({ action: 'guess', roomId, guess }),
   submitPicks: (roomId: string, picks: { q: string; a: string }[]) => post<KnowMeRoom>({ action: 'submitPicks', roomId, picks }),
   answerKnowMe: (roomId: string, text: string) => post<KnowMeRoom>({ action: 'answerKnowMe', roomId, text }),
+  acceptKnowMe: (roomId: string, round: number) => post<KnowMeRoom>({ action: 'acceptKnowMe', roomId, round }),
   placeShips: (roomId: string, ships: number[][]) => post<BattleshipRoom>({ action: 'placeShips', roomId, ships }),
   fire: (roomId: string, cell: number) => post<BattleshipRoom>({ action: 'fire', roomId, cell }),
   setSecret: (roomId: string, secret: string) => post<TwentyRoom>({ action: 'setSecret', roomId, secret }),

@@ -117,12 +117,43 @@ export type QuizRoom = Base & {
   currentQ?: { q: string; options: string[] };
 };
 
+export type TileState = 'hit' | 'present' | 'miss';
+
+export type WordDuelRoom = Base & {
+  kind: 'wordduel';
+  /** index into the SERVER-ONLY word bank */
+  wordIndex: number;
+  guesses: Record<string, string[]>;
+  feedbacks: Record<string, TileState[][]>;
+  /** view-only: guesses used per player, injected by sanitize */
+  progress?: Record<string, number>;
+  /** filled by the API layer when the game ends */
+  solution?: string;
+};
+
+export type EmojiResult = { emojis: string; category: string; answer: string; picks: Record<string, string> };
+
+export type EmojiRoom = Base & {
+  kind: 'emoji';
+  asked: number[];
+  /** index into the SERVER-ONLY riddle bank; view layer inlines currentRiddle */
+  riddleIndex: number;
+  picks: Record<string, string>;
+  scores: Record<string, number>;
+  target: number;
+  results: EmojiResult[];
+  /** view-only, injected by sanitize, never persisted */
+  currentRiddle?: { emojis: string; category: string };
+};
+
 export type Room =
   | NumberRoom
   | KnowMeRoom
   | BattleshipRoom
   | TwentyRoom
   | MysteryRoom
-  | QuizRoom;
+  | QuizRoom
+  | WordDuelRoom
+  | EmojiRoom;
 
 export type GameKind = Room['kind'];

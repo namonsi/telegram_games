@@ -16,6 +16,8 @@ const KIND_LABEL: Record<GameKind, string> = {
   twenty: '❓ 20 Questions',
   mystery: '🕵️ Mystery',
   quiz: '🧠 Quiz Duel',
+  wordduel: '🔤 Word Duel',
+  emoji: '🧩 Emoji Riddles',
 };
 
 /** /admin — finished-games log; lives on the website only, never linked in the bot */

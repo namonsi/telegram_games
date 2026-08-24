@@ -1,5 +1,15 @@
 import { initData } from '@tma.js/sdk';
-import type { BattleshipRoom, GameKind, KnowMeRoom, MysteryRoom, QuizRoom, Room, TwentyRoom } from './game/types';
+import type {
+  BattleshipRoom,
+  EmojiRoom,
+  GameKind,
+  KnowMeRoom,
+  MysteryRoom,
+  QuizRoom,
+  Room,
+  TwentyRoom,
+  WordDuelRoom,
+} from './game/types';
 
 const BOT_USERNAME = 'embel_games_bot';
 
@@ -64,6 +74,8 @@ export const api = {
   investigate: (roomId: string) => post<MysteryRoom>({ action: 'investigate', roomId }),
   accuse: (roomId: string, suspectId: string) => post<MysteryRoom>({ action: 'accuse', roomId, suspectId }),
   answerQuiz: (roomId: string, choice: number) => post<QuizRoom>({ action: 'answerQuiz', roomId, choice }),
+  guessWord: (roomId: string, word: string) => post<WordDuelRoom>({ action: 'guessWord', roomId, text: word }),
+  answerEmoji: (roomId: string, answer: string) => post<EmojiRoom>({ action: 'answerEmoji', roomId, text: answer }),
   react: (roomId: string, emoji: string) => post({ action: 'react', roomId, emoji }),
   chat: (roomId: string, text: string) => post({ action: 'chat', roomId, text }),
   rematch: (roomId: string) => post({ action: 'rematch', roomId }),

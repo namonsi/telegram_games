@@ -5,6 +5,8 @@ import * as battleship from './battleship';
 import * as twenty from './twenty';
 import * as mystery from './mystery';
 import * as quiz from './quiz';
+import * as wordduel from './wordduel';
+import * as emoji from './emojiriddle';
 import { MYSTERY_CASES } from '../../api/mysteryCases';
 import { QUIZ_BANK } from '../../api/quizBank';
 import type { Player } from './types';
@@ -202,5 +204,61 @@ while (qz.status !== 'finished') {
   qz = quiz.answerQuiz(qz, 'b', leader === 'a' ? (m.correct + 1) % 4 : m.correct, m, bankSize);
 }
 assert.equal(Math.max(...Object.values(qz.scores)), quiz.QUIZ_TARGET, 'winner hit the target');
+
+// ---------- word duel ----------
+const WORD = 'crane';
+let wd = wordduel.createWordDuel('wd1', alice, 0);
+wd = join(wd, bob);
+wd = { ...wd, status: 'playing' };
+assert.throws(() => wordduel.guessWord(wd, 'a', 'bee', WORD), /5 letters/, 'short guess rejected');
+let out1 = wordduel.guessWord(wd, 'a', 'crate', WORD);
+assert.deepEqual(out1.feedback, ['hit', 'hit', 'hit', 'miss', 'hit'], 'crate vs crane scoring');
+assert.equal(out1.room.status, 'playing', 'wrong guess keeps playing');
+wd = out1.room;
+// duplicate-letter scoring: "eerie" vs "crane" — second e must be miss
+const dup = wordduel.scoreGuess('eerie', 'crane');
+assert.equal(dup.filter((t) => t === 'hit').length, 1, 'one exact e');
+// bob solves first -> instant win
+wd = wordduel.guessWord(wd, 'b', WORD, WORD).room;
+assert.equal(wd.status, 'finished', 'solved ends the duel');
+assert.equal(wd.winner, 'b', 'solver wins');
+assert.throws(() => wordduel.guessWord(wd, 'a', 'crane', WORD), /not in progress/, 'no play after finish');
+// draw: both burn all six tries
+let draw = wordduel.createWordDuel('wd2', alice, 0);
+draw = join(draw, bob);
+draw = { ...draw, status: 'playing' };
+for (let i = 0; i < wordduel.WORD_DUEL_TRIES; i++) {
+  if (draw.status !== 'playing') break;
+  draw = wordduel.guessWord(draw, 'a', 'zzzzz', WORD).room;
+  if (draw.status !== 'playing') break;
+  draw = wordduel.guessWord(draw, 'b', 'yyyyy', WORD).room;
+}
+assert.equal(draw.status, 'finished', 'both exhausted -> finished');
+assert.equal(draw.winner, null, 'both failed -> draw');
+draw = wordduel.rematchWordDuel(draw, 1);
+assert.equal(draw.status, 'playing', 'rematch starts fresh duel');
+
+// ---------- emoji riddles ----------
+const RIDDLE = { emojis: '🍿👑🌊', category: 'Movie', answer: 'titanic' };
+const emojiBankSize = 40;
+let em = emoji.createEmoji('em1', alice, emojiBankSize);
+em = join(em, bob);
+em = { ...em, status: 'playing' };
+em = emoji.answerEmoji(em, 'a', 'Titanic!', RIDDLE, emojiBankSize);
+assert.equal(Object.keys(em.picks).length, 1, 'waiting for partner');
+em = emoji.answerEmoji(em, 'b', 'TITANIC', RIDDLE, emojiBankSize);
+assert.equal(em.results.length, 1, 'round resolved');
+assert.equal(em.scores.a, 1, 'normalized answer scored for alice');
+assert.equal(em.scores.b, 1, 'normalized answer scored for bob');
+assert.notEqual(em.riddleIndex, undefined, 'next riddle ready');
+assert.throws(() => emoji.answerEmoji(em, 'a', '', RIDDLE, emojiBankSize), /1-60/, 'empty answer rejected');
+// drive to a winner
+while (em.status !== 'finished') {
+  em = emoji.answerEmoji(em, 'a', RIDDLE.answer, RIDDLE, emojiBankSize);
+  em = emoji.answerEmoji(em, 'b', 'nope', RIDDLE, emojiBankSize);
+}
+assert.equal(em.winner, 'a', 'alice wins the riddle race');
+em = emoji.rematchEmoji(em, emojiBankSize);
+assert.equal(em.status, 'playing', 'emoji rematch starts fresh');
 
 console.log('engine:check OK');

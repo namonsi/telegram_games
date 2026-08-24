@@ -1,6 +1,7 @@
 import {
   acceptKnowMeAnswer,
   accuse,
+  answerEmojiRiddle,
   answerKnowMe,
   answerQuiz,
   answerTwenty,
@@ -8,6 +9,7 @@ import {
   create,
   fireShot,
   guessSecret,
+  guessWordDuel,
   investigate,
   joinRoom,
   makeGuess,
@@ -39,6 +41,8 @@ type Body = {
     | 'investigate'
     | 'accuse'
     | 'answerQuiz'
+    | 'guessWord'
+    | 'answerEmoji'
     | 'react'
     | 'chat'
     | 'rematch';
@@ -129,6 +133,10 @@ async function run(body: Body, initData: string | undefined): Promise<unknown> {
       return accuse(initData, body.roomId!, body.suspectId);
     case 'answerQuiz':
       return answerQuiz(initData, body.roomId!, body.choice);
+    case 'guessWord':
+      return guessWordDuel(initData, body.roomId!, body.text);
+    case 'answerEmoji':
+      return answerEmojiRiddle(initData, body.roomId!, body.text);
     case 'react':
       return react(initData, body.roomId!, body.emoji);
     case 'chat':

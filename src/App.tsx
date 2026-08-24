@@ -12,12 +12,14 @@ import Battleship from './ui/Battleship';
 import TwentyQ from './ui/TwentyQ';
 import Mystery from './ui/Mystery';
 import QuizDuel from './ui/QuizDuel';
+import WordDuel from './ui/WordDuel';
+import EmojiRiddles from './ui/EmojiRiddles';
 import SurpriseGate from './ui/SurpriseGate';
 import HowTo from './ui/HowTo';
 
 type Me = { id: string; firstName: string; photoUrl?: string; username?: string };
 
-const KINDS: GameKind[] = ['number', 'knowme', 'battleship', 'twenty', 'mystery', 'quiz'];
+const KINDS: GameKind[] = ['number', 'knowme', 'battleship', 'twenty', 'mystery', 'quiz', 'wordduel', 'emoji'];
 
 export default function App({ me }: { me: Me }) {
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -103,6 +105,10 @@ export default function App({ me }: { me: Me }) {
         return <Mystery meId={me.id} room={room} onUpdate={applyRoom} />;
       case 'quiz':
         return <QuizDuel meId={me.id} room={room} onUpdate={applyRoom} />;
+      case 'wordduel':
+        return <WordDuel meId={me.id} room={room} onUpdate={applyRoom} />;
+      case 'emoji':
+        return <EmojiRiddles meId={me.id} room={room} onUpdate={applyRoom} />;
     }
   };
 

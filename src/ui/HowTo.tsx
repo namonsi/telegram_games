@@ -42,9 +42,9 @@ const HOWTOS: Record<GameKind, { emoji: string; name: string; steps: string[] }>
     emoji: '🕵️',
     name: 'Murder Mystery',
     steps: [
-      'You investigate a case TOGETHER — take turns uncovering clues one by one.',
+      'You investigate a case TOGETHER — take turns uncovering evidence one by one.',
       'Talk it through (use the chat!), then accuse a suspect when you\'re confident.',
-      '3 wrong accusations and the case goes cold. Solve it for a shared win — a fresh case every rematch.',
+      'Each of you gets ONE wrong accusation — two misses and the case goes cold. Solve it for a shared win.',
     ],
   },
   quiz: {
@@ -54,6 +54,24 @@ const HOWTOS: Record<GameKind, { emoji: string; name: string; steps: string[] }>
       'You both get the same multiple-choice question and answer secretly.',
       'When both have answered, the correct one is revealed — a correct answer scores a point.',
       'First to 7 points wins. Ties keep going until someone leads.',
+    ],
+  },
+  wordduel: {
+    emoji: '🔤',
+    name: 'Word Duel',
+    steps: [
+      'You both crack the SAME hidden 5-letter word — 6 guesses each, taking turns (the host starts).',
+      'Tiles light up: 🟩 right spot, 🟨 right letter wrong spot, ⬛ not in the word.',
+      'First to solve wins. If you burn all six guesses, you can only watch — no peeking at their letters!',
+    ],
+  },
+  emoji: {
+    emoji: '🧩',
+    name: 'Emoji Riddles',
+    steps: [
+      'A string of emojis hints at a movie, song or phrase — you both answer the same one secretly.',
+      'Close spelling counts ("Titanic!" = "titanic"). One answer per riddle each.',
+      'First to 7 correct wins. Answers reveal after you both lock in.',
     ],
   },
 };

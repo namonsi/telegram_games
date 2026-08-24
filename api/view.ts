@@ -1,12 +1,15 @@
+import { EMOJI_BANK } from './emojiBank.js';
 import { QUIZ_BANK } from './quizBank.js';
 import type {
   BattleshipRoom,
+  EmojiRoom,
   KnowMeRoom,
   KnowMePick,
   NumberRoom,
   QuizRoom,
   Room,
   TwentyRoom,
+  WordDuelRoom,
 } from '../src/game/types.js';
 import { otherPlayer } from '../src/game/engine.js';
 import { KNOW_ME_ROUNDS, currentQuestion } from '../src/game/knowme.js';
@@ -31,6 +34,10 @@ export function sanitizeRoom(room: Room, viewerId: string | null): Room {
       return room;
     case 'quiz':
       return sanitizeQuiz(room);
+    case 'wordduel':
+      return sanitizeWordDuel(room, viewerId);
+    case 'emoji':
+      return sanitizeEmoji(room, viewerId);
   }
 }
 
@@ -78,4 +85,33 @@ function sanitizeTwenty(room: TwentyRoom, viewerId: string | null): TwentyRoom {
 function sanitizeQuiz(room: QuizRoom): QuizRoom {
   const meta = QUIZ_BANK[room.current];
   return { ...room, currentQ: meta ? { q: meta.q, options: meta.options } : undefined };
+}
+
+/** opponent's guesses and tile feedback stay server-side; only try-counts leak */
+function sanitizeWordDuel(room: WordDuelRoom, viewerId: string | null): WordDuelRoom {
+  if (!viewerId || !room.players.some((p) => p.id === viewerId)) {
+    return { ...room, guesses: {}, feedbacks: {}, progress: {} };
+  }
+  const partner = otherPlayer(room.players, viewerId).id;
+  return {
+    ...room,
+    guesses: { [viewerId]: room.guesses[viewerId] ?? [] },
+    feedbacks: { [viewerId]: room.feedbacks[viewerId] ?? [] },
+    progress: {
+      [viewerId]: room.guesses[viewerId]?.length ?? 0,
+      [partner]: room.guesses[partner]?.length ?? 0,
+    },
+  };
+}
+
+/** riddle display comes from the server bank; answer texts hidden until the round resolves */
+function sanitizeEmoji(room: EmojiRoom, viewerId: string | null): EmojiRoom {
+  const meta = EMOJI_BANK[room.riddleIndex];
+  const picks: Record<string, string> = {};
+  for (const p of room.players) {
+    const raw = room.picks[p.id];
+    if (raw === undefined) continue;
+    picks[p.id] = p.id === viewerId ? raw : '';
+  }
+  return { ...room, currentRiddle: meta ? { emojis: meta.emojis, category: meta.category } : undefined, picks };
 }

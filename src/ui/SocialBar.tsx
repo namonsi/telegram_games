@@ -61,11 +61,9 @@ export default function SocialBar<T extends Room>({ room, onUpdate }: Props<T>) 
         </button>
       </div>
 
-      {chatLog.length > 0 && (
-        <button className="secondary chat-history-btn" onClick={() => setHistoryOpen(true)}>
-          💬 Chat history ({chatLog.length})
-        </button>
-      )}
+      <button className="secondary chat-history-btn" onClick={() => setHistoryOpen(true)}>
+        💬 Chat history{chatLog.length > 0 ? ` (${chatLog.length})` : ''}
+      </button>
 
       {historyOpen && <ChatHistory log={chatLog} onClose={() => setHistoryOpen(false)} />}
     </>
@@ -85,18 +83,22 @@ function ChatHistory({ log, onClose }: { log: { sender: string; text: string; at
           ✕
         </button>
         <h2>💬 Chat history</h2>
-        <ul className="chat-log">
-          {log.map((m, i) => (
-            <li key={i}>
-              <span className="chat-time">
-                {new Date(m.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-              <span>
-                <b>{m.sender}</b> {m.text}
-              </span>
-            </li>
-          ))}
-        </ul>
+        {log.length === 0 ? (
+          <p className="muted">No messages yet — say something sweet 💞</p>
+        ) : (
+          <ul className="chat-log">
+            {log.map((m, i) => (
+              <li key={i}>
+                <span className="chat-time">
+                  {new Date(m.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                <span>
+                  <b>{m.sender}</b> {m.text}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
         <div ref={endRef} />
       </div>
     </div>

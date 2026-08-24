@@ -5,9 +5,13 @@ import * as battleship from '../src/game/battleship.js';
 import * as twenty from '../src/game/twenty.js';
 import * as mystery from '../src/game/mystery.js';
 import * as quiz from '../src/game/quiz.js';
+import * as wordduel from '../src/game/wordduel.js';
+import * as emoji from '../src/game/emojiriddle.js';
 import type { GameKind, KnowMePick, Player, Range, Room } from '../src/game/types.js';
 import { MYSTERY_CASES } from './mysteryCases.js';
 import { QUIZ_BANK } from './quizBank.js';
+import { WORD_BANK } from './wordBank.js';
+import { EMOJI_BANK } from './emojiBank.js';
 import { getRoom, putRoom, addGameRecord } from './store.js';
 import { sanitizeRoom } from './view.js';
 
@@ -112,6 +116,14 @@ export async function create(
     case 'quiz':
       room = quiz.createQuiz(id, creator, QUIZ_BANK.length);
       break;
+    case 'wordduel': {
+      const idx = Math.floor(Math.random() * WORD_BANK.length);
+      room = wordduel.createWordDuel(id, creator, idx);
+      break;
+    }
+    case 'emoji':
+      room = emoji.createEmoji(id, creator, EMOJI_BANK.length);
+      break;
   }
   await putRoom(room);
   return sanitizeRoom(room, creator.id);
@@ -124,6 +136,10 @@ function kickoff(room: Room): Room {
     case 'mystery':
       return mystery.startCase(room, room.caseIndex, MYSTERY_CASES[room.caseIndex]);
     case 'quiz':
+      return { ...room, status: 'playing' };
+    case 'wordduel':
+      return { ...room, status: 'playing' };
+    case 'emoji':
       return { ...room, status: 'playing' };
     case 'twenty':
       return room.secret ? { ...room, status: 'playing' } : room;
@@ -254,6 +270,26 @@ export async function answerQuiz(initData: string | undefined, roomId: string, c
   });
 }
 
+export async function guessWordDuel(initData: string | undefined, roomId: string, guess: string | undefined): Promise<Room> {
+  return withRoom(initData, roomId, (room, userId) => {
+    if (room.kind !== 'wordduel') throw new Error('Wrong game');
+    const word = WORD_BANK[room.wordIndex];
+    if (!word) throw new Error('No active word');
+    const next = wordduel.guessWord(room, userId, guess ?? '', word).room;
+    // reveal the word once the duel is over
+    return next.status === 'finished' ? { ...next, solution: word } : next;
+  });
+}
+
+export async function answerEmojiRiddle(initData: string | undefined, roomId: string, answer: string | undefined): Promise<Room> {
+  return withRoom(initData, roomId, (room, userId) => {
+    if (room.kind !== 'emoji') throw new Error('Wrong game');
+    const meta = EMOJI_BANK[room.riddleIndex];
+    if (!meta) throw new Error('No active riddle');
+    return emoji.answerEmoji(room, userId, answer ?? '', meta, EMOJI_BANK.length);
+  });
+}
+
 export async function react(initData: string | undefined, roomId: string, emoji: string | undefined): Promise<Room> {
   return withRoom(initData, roomId, (room, userId) =>
     setReaction(room, (emoji ?? '').slice(0, 8), REACTION_TTL),
@@ -284,6 +320,12 @@ export async function rematchRoom(initData: string | undefined, roomId: string):
       }
       case 'quiz':
         return quiz.rematchQuiz(room, QUIZ_BANK.length);
+      case 'wordduel': {
+        const idx = Math.floor(Math.random() * WORD_BANK.length);
+        return wordduel.rematchWordDuel(room, idx);
+      }
+      case 'emoji':
+        return emoji.rematchEmoji(room, EMOJI_BANK.length);
     }
   });
 }

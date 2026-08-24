@@ -992,3 +992,141 @@ label.suspect.picked {
   font-size: 12px;
   margin-right: 6px;
 }
+
+/* ---------- word duel ---------- */
+
+.word-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.word-grid.small {
+  gap: 4px;
+  transform: scale(0.85);
+  transform-origin: left top;
+  margin-bottom: -20px;
+}
+
+.word-row {
+  display: flex;
+  gap: 6px;
+}
+
+.word-tile {
+  width: 52px;
+  height: 52px;
+  border: 2px solid var(--card-border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--fg);
+  background: var(--card);
+}
+
+.word-grid.small .word-tile {
+  width: 38px;
+  height: 38px;
+  font-size: 17px;
+}
+
+.word-tile.draft {
+  border-color: var(--accent-2);
+}
+
+.word-tile.hit {
+  background: rgba(61, 240, 140, 0.75);
+  border-color: transparent;
+}
+
+.word-tile.present {
+  background: rgba(255, 193, 75, 0.75);
+  border-color: transparent;
+}
+
+.word-tile.miss:not(:empty) {
+  background: rgba(179, 167, 192, 0.25);
+  border-color: transparent;
+}
+
+.word-keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.key-row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.key {
+  flex: 1;
+  max-width: 34px;
+  height: 44px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--fg);
+  border-radius: 6px;
+}
+
+.key.wide {
+  max-width: 90px;
+  flex: 1.6;
+}
+
+.key.primary {
+  background: var(--gradient);
+  border-color: transparent;
+}
+
+.key.hit {
+  background: rgba(61, 240, 140, 0.75);
+  border-color: transparent;
+}
+
+.key.present {
+  background: rgba(255, 193, 75, 0.75);
+  border-color: transparent;
+}
+
+.key.miss {
+  opacity: 0.35;
+}
+
+/* ---------- emoji riddles ---------- */
+
+.riddle-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.riddle-category {
+  align-self: center;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.riddle-emojis {
+  font-size: 44px;
+  letter-spacing: 8px;
+  line-height: 1.2;
+  filter: drop-shadow(0 3px 8px rgba(176, 96, 255, 0.3));
+}

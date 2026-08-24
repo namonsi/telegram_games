@@ -46,7 +46,7 @@ export function startCase(room: MysteryRoom, caseIndex: number, meta: CaseMeta):
   };
 }
 
-export const MAX_STRIKES = 3;
+export const MAX_STRIKES = 2;
 
 export function investigate(room: MysteryRoom, playerId: string): MysteryRoom {
   if (room.status !== 'playing') throw new Error('Game is not in progress');

@@ -1,9 +1,7 @@
 import { kv } from '@vercel/kv';
 import type { Room } from '../src/game/types.js';
 
-// ponytail: in-memory fallback so local dev-api works without a KV store.
-// Prod (Vercel) always has KV_REST_API_URL set.
-const hasKV = Boolean(process.env.KV_REST_API_URL);
+export const hasKV = Boolean(process.env.KV_REST_API_URL);
 const memory = new Map<string, Room>();
 
 export async function getRoom(id: string): Promise<Room | null> {
@@ -17,6 +15,18 @@ export async function putRoom(room: Room): Promise<void> {
     return;
   }
   await kv.set(`room:${room.id}`, room);
+}
+
+export async function kvWriteTest(): Promise<{ hasKV: boolean; canWrite: boolean; error?: string }> {
+  if (!hasKV) return { hasKV: false, canWrite: false };
+  try {
+    await kv.set('__admin_test__', Date.now());
+    const val = await kv.get<number>('__admin_test__');
+    await kv.del('__admin_test__');
+    return { hasKV: true, canWrite: val !== null };
+  } catch (e) {
+    return { hasKV: true, canWrite: false, error: (e as Error).message };
+  }
 }
 
 // ---------- finished-games log for the /admin page ----------

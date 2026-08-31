@@ -1,4 +1,4 @@
-import { getGameRecords } from './store.js';
+import { getGameRecords, kvWriteTest } from './store.js';
 import type { GameRecord } from './store.js';
 
 type Req = {
@@ -28,5 +28,6 @@ export default async function handler(req: Req, res: Res) {
   }
 
   const records = await getGameRecords();
-  return res.json({ records });
+  const kvStatus = await kvWriteTest();
+  return res.json({ records, kv: kvStatus });
 }

@@ -10,6 +10,8 @@ type GameLog = {
   endedAt: number;
 };
 
+type KvStatus = { hasKV: boolean; canWrite: boolean; error?: string };
+
 const KIND_LABEL: Record<GameKind, string> = {
   number: '🔢 Guess the Number',
   knowme: '💕 Know Me',
@@ -26,6 +28,7 @@ export default function Admin() {
   const [key, setKey] = useState(() => localStorage.getItem('admin-key') ?? '');
   const [input, setInput] = useState(key);
   const [records, setRecords] = useState<GameLog[] | null>(null);
+  const [kv, setKv] = useState<KvStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -34,9 +37,10 @@ export default function Admin() {
     setError(null);
     try {
       const res = await fetch('/api/admin', { headers: { 'x-admin-key': k } });
-      const data = (await res.json()) as { records?: GameLog[]; error?: string };
+      const data = (await res.json()) as { records?: GameLog[]; kv?: KvStatus; error?: string };
       if (!res.ok) throw new Error(data.error ?? 'Failed');
       setRecords(data.records ?? []);
+      setKv(data.kv ?? null);
       localStorage.setItem('admin-key', k);
       setKey(k);
     } catch (e) {
@@ -51,8 +55,6 @@ export default function Admin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Deduplicate: each game may have a "created" entry (winner=null) and a "finished" entry (winner set).
-  // Keep only the latest entry per game ID so finished games show the result, in-progress games show up too.
   const latest = useMemo(() => {
     if (!records) return [];
     const byId = new Map<string, GameLog>();
@@ -88,6 +90,15 @@ export default function Admin() {
   return (
     <div className="admin-wrap">
       <h1>📊 Games log</h1>
+
+      {kv && (
+        <div className="card" style={{ padding: 12, marginBottom: 16, fontSize: 13 }}>
+          <b>KV status:</b>{' '}
+          {kv.canWrite ? '✅ connected + writable' : kv.hasKV ? '⚠️ KV configured but writes failing' : '❌ KV not configured'}
+          {kv.error && <span className="muted"> — {kv.error}</span>}
+        </div>
+      )}
+
       <p className="muted">
         {latest.length} games · {finished} finished · {inProgress} in progress ·{' '}
         <button className="secondary" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => load(key)} disabled={busy}>

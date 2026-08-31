@@ -4,6 +4,7 @@ import type { GameKind } from '../game/types';
 type GameLog = {
   id: string;
   kind: GameKind;
+  createdBy: string;
   players: { id: string; tgId: number; firstName: string; username?: string }[];
   winner: string | null;
   endedAt: number;
@@ -90,29 +91,39 @@ export default function Admin() {
             </tr>
           </thead>
           <tbody>
-            {records.map((r) => (
-              <tr key={r.id + r.endedAt}>
-                <td>{new Date(r.endedAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
-                <td>{KIND_LABEL[r.kind] ?? r.kind}</td>
-                <td>
-                  {r.players.map((p) => (
-                    <div key={p.id}>
-                      {p.firstName}{' '}
+            {records.map((r) => {
+              const creator = r.players.find((p) => p.id === r.createdBy);
+              const joiner = r.players.find((p) => p.id !== r.createdBy);
+              return (
+                <tr key={r.id + r.endedAt}>
+                  <td>{new Date(r.endedAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
+                  <td>{KIND_LABEL[r.kind] ?? r.kind}</td>
+                  <td>
+                    <div>
+                      {creator?.firstName ?? 'Unknown'}{' '}
                       <span className="muted">
-                        {p.username ? `@${p.username}` : ''} · id {p.tgId}
+                        {creator?.username ? `@${creator.username}` : ''} · created
                       </span>
                     </div>
-                  ))}
-                </td>
-                <td>
-                  {r.winner === 'team'
-                    ? '🤝 solved together'
-                    : r.winner === null
-                      ? '— draw / cold'
-                      : (r.players.find((p) => p.id === r.winner)?.firstName ?? r.winner)}
-                </td>
-              </tr>
-            ))}
+                    {joiner && (
+                      <div>
+                        {joiner.firstName}{' '}
+                        <span className="muted">
+                          {joiner.username ? `@${joiner.username}` : ''} · joined
+                        </span>
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    {r.winner === 'team'
+                      ? '🤝 solved together'
+                      : r.winner === null
+                        ? '— draw / cold'
+                        : (r.players.find((p) => p.id === r.winner)?.firstName ?? r.winner) + ' ✅'}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

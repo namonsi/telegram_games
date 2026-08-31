@@ -24,6 +24,7 @@ export async function putRoom(room: Room): Promise<void> {
 export type GameRecord = {
   id: string;
   kind: Room['kind'];
+  createdBy: string;
   players: { id: string; tgId: number; firstName: string; username?: string }[];
   winner: string | null;
   endedAt: number;

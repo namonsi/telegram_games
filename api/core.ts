@@ -62,6 +62,7 @@ async function withRoom(initData: string | undefined, roomId: string, fn: (room:
     await addGameRecord({
       id: updated.id,
       kind: updated.kind,
+      createdBy: room.players[0]?.id ?? '',
       players: updated.players.map((p) => ({
         id: p.id,
         tgId: p.telegram.tgId,
@@ -70,7 +71,7 @@ async function withRoom(initData: string | undefined, roomId: string, fn: (room:
       })),
       winner: updated.winner,
       endedAt: Date.now(),
-    }).catch(() => {});
+    }).catch((e) => console.error('addGameRecord failed:', e));
   }
   return sanitizeRoom(updated, userId);
 }

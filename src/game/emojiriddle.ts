@@ -34,7 +34,11 @@ export function createEmoji(id: string, creator: Player, bankSize: number): Emoj
 }
 
 export function normalizeAnswer(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/^(the|a|an)\s+/, '');
 }
 
 export function answerEmoji(room: EmojiRoom, playerId: string, answer: string, meta: RiddleMeta, bankSize: number): EmojiRoom {

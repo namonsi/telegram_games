@@ -127,6 +127,19 @@ export async function create(
       break;
   }
   await putRoom(room);
+  await addGameRecord({
+    id: room.id,
+    kind: room.kind,
+    createdBy: creator.id,
+    players: room.players.map((p) => ({
+      id: p.id,
+      tgId: p.telegram.tgId,
+      firstName: p.firstName,
+      username: p.telegram.username,
+    })),
+    winner: null,
+    endedAt: Date.now(),
+  }).catch((e) => console.error('addGameRecord (create) failed:', e));
   return sanitizeRoom(room, creator.id);
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { GameKind } from '../game/types';
 
 type GameLog = {
@@ -21,7 +21,7 @@ const KIND_LABEL: Record<GameKind, string> = {
   emoji: '🧩 Emoji Riddles',
 };
 
-/** /admin — finished-games log; lives on the website only, never linked in the bot */
+/** /admin — games log; lives on the website only, never linked in the bot */
 export default function Admin() {
   const [key, setKey] = useState(() => localStorage.getItem('admin-key') ?? '');
   const [input, setInput] = useState(key);
@@ -51,6 +51,18 @@ export default function Admin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Deduplicate: each game may have a "created" entry (winner=null) and a "finished" entry (winner set).
+  // Keep only the latest entry per game ID so finished games show the result, in-progress games show up too.
+  const latest = useMemo(() => {
+    if (!records) return [];
+    const byId = new Map<string, GameLog>();
+    for (const r of records) {
+      const existing = byId.get(r.id);
+      if (!existing || r.endedAt > existing.endedAt) byId.set(r.id, r);
+    }
+    return Array.from(byId.values()).sort((a, b) => b.endedAt - a.endedAt);
+  }, [records]);
+
   if (!records) {
     return (
       <div className="admin-wrap">
@@ -70,32 +82,36 @@ export default function Admin() {
     );
   }
 
+  const finished = latest.filter((r) => r.winner !== null).length;
+  const inProgress = latest.length - finished;
+
   return (
     <div className="admin-wrap">
       <h1>📊 Games log</h1>
       <p className="muted">
-        {records.length} finished games (latest first) ·{' '}
+        {latest.length} games · {finished} finished · {inProgress} in progress ·{' '}
         <button className="secondary" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => load(key)} disabled={busy}>
           Refresh
         </button>
       </p>
-      {records.length === 0 && <p className="muted">No finished games yet.</p>}
-      {records.length > 0 && (
+      {latest.length === 0 && <p className="muted">No games yet.</p>}
+      {latest.length > 0 && (
         <table className="admin-table">
           <thead>
             <tr>
               <th>When</th>
               <th>Game</th>
               <th>Players</th>
-              <th>Winner</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            {records.map((r) => {
+            {latest.map((r) => {
               const creator = r.players.find((p) => p.id === r.createdBy);
               const joiner = r.players.find((p) => p.id !== r.createdBy);
+              const isFinished = r.winner !== null;
               return (
-                <tr key={r.id + r.endedAt}>
+                <tr key={r.id}>
                   <td>{new Date(r.endedAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
                   <td>{KIND_LABEL[r.kind] ?? r.kind}</td>
                   <td>
@@ -115,11 +131,13 @@ export default function Admin() {
                     )}
                   </td>
                   <td>
-                    {r.winner === 'team'
-                      ? '🤝 solved together'
-                      : r.winner === null
-                        ? '— draw / cold'
-                        : (r.players.find((p) => p.id === r.winner)?.firstName ?? r.winner) + ' ✅'}
+                    {!isFinished ? (
+                      <span className="muted">⏳ in progress</span>
+                    ) : r.winner === 'team' ? (
+                      '🤝 solved together'
+                    ) : (
+                      (r.players.find((p) => p.id === r.winner)?.firstName ?? 'Unknown') + ' ✅'
+                    )}
                   </td>
                 </tr>
               );

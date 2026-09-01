@@ -74,24 +74,7 @@ const HOWTOS: Record<GameKind, { emoji: string; name: string; steps: string[] }>
       'First to 7 correct wins. Answers reveal after you both lock in.',
     ],
   },
-  othello: {
-    emoji: '⚫',
-    name: 'Othello',
-    steps: [
-      'You play on an 8×8 board — you\'re ⚫ (black), your partner is ⚪ (white). Black always goes first.',
-      'Place a disc so it sandwiches one or more of your partner\'s discs in a straight line — all sandwiched discs flip to your color.',
-      'If you can\'t move, your turn is skipped. When the board is full or neither can move, most discs wins.',
-    ],
-  },
-  gomoku: {
-    emoji: '🎯',
-    name: 'Gomoku',
-    steps: [
-      'You play on a 15×15 board — ⚫ goes first, then alternate turns.',
-      'Place a stone on any empty intersection. The first to get 5 in a row (horizontal, vertical, or diagonal) wins.',
-      'If the board fills with no winner, it\'s a draw.',
-    ],
-  },
+
 };
 
 /** corner "?" button + tutorial overlay; closes via the X, the backdrop, or Escape */

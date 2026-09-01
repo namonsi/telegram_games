@@ -7,8 +7,7 @@ import * as mystery from './mystery';
 import * as quiz from './quiz';
 import * as wordduel from './wordduel';
 import * as emoji from './emojiriddle';
-import * as othello from './othello';
-import * as gomoku from './gomoku';
+
 import { MYSTERY_CASES } from '../../api/mysteryCases';
 import { QUIZ_BANK } from '../../api/quizBank';
 import type { Player } from './types';
@@ -263,78 +262,4 @@ assert.equal(em.winner, 'a', 'alice wins the riddle race');
 em = emoji.rematchEmoji(em, emojiBankSize);
   assert.equal(em.status, 'playing', 'emoji rematch starts fresh');
 
-// ---------- gomoku ----------
-  let gm = gomoku.createGomoku('gm1', alice);
-  gm = { ...join(gm, bob), status: 'playing', turn: alice.id, validMoves: gm.validMoves };
-  assert.equal(gm.status, 'playing', 'gomoku starts playing after join');
-  assert.equal(gm.turn, 'a', 'gomoku: black (alice) goes first');
-  // black places a stone
-  const gmMove = gm.validMoves[0];
-  gm = gomoku.placeStone(gm, 'a', gmMove).room;
-  assert.equal(gm.turn, 'b', 'gomoku: turn passes to white');
-  assert.ok(gm.board[gmMove] === 1, 'gomoku: stone placed correctly');
-  // drive a few moves
-  for (let i = 0; i < 10 && gm.status === 'playing'; i++) {
-    const mover = gm.turn === 'a' ? 'a' : 'b';
-    if (gm.validMoves.length === 0) break;
-    gm = gomoku.placeStone(gm, mover, gm.validMoves[0]).room;
-  }
-  assert.equal(gm.status, 'playing', 'gomoku still playing after a few moves');
-  // test win by forcing 5 in a row manually
-  const gmWin = gomoku.createGomoku('gm2', alice);
-  const gmWinBoard = [...gmWin.board];
-  // set up a row: positions 0,1,2,3 for black (playerIdx 0 = alice)
-  gmWinBoard[0] = 1;
-  gmWinBoard[1] = 1;
-  gmWinBoard[2] = 1;
-  gmWinBoard[3] = 1;
-  const gmWinRoom = { ...gmWin, board: gmWinBoard, players: [alice, bob], status: 'playing' as const, turn: 'b' as string };
-  // white places at 5 (not in a row with black's 4), then black places at 4 to win
-  const gmWin2 = gomoku.placeStone(gmWinRoom, 'b', 15).room;
-  const gmWin3 = gomoku.placeStone(gmWin2, 'a', 4).room;
-  assert.equal(gmWin3.status, 'finished', 'gomoku: game ends on 5 in a row');
-  assert.equal(gmWin3.winner, 'a', 'gomoku: winner is the one who got 5');
-  // test rematch
-  gm = gomoku.rematchGomoku(gmWin3);
-  assert.equal(gm.status, 'playing', 'gomoku: rematch starts fresh');
-
-  // ---------- othello ----------
-  let ot = othello.createOthello('ot1', alice);
-  ot = join(ot, bob);
-  ot = { ...ot, status: 'playing', turn: alice.id, validMoves: ot.validMoves };
-  // initial valid moves for black (alice)
-  assert.ok(ot.validMoves.length > 0, 'black has initial moves');
-  assert.throws(() => othello.placePiece(ot, 'b', ot.validMoves[0]), /Not your turn/, 'white cannot move first');
-  // black plays a valid move
-  const firstMove = ot.validMoves[0];
-  const otOut1 = othello.placePiece(ot, 'a', firstMove);
-  assert.ok(otOut1.flips.length > 0, 'first move flips at least one disc');
-  ot = otOut1.room;
-  assert.equal(ot.turn, 'b', 'turn passes to white');
-  // white has valid moves
-  assert.ok(ot.validMoves.length > 0, 'white has valid moves after black plays');
-  // play a few moves to ensure it runs
-  for (let i = 0; i < 10 && ot.status === 'playing'; i++) {
-    const mover = ot.turn === 'a' ? 'a' : 'b';
-    if (ot.validMoves.length === 0) break;
-    ot = othello.placePiece(ot, mover, ot.validMoves[0]).room;
-  }
-  assert.equal(ot.status, 'playing', 'game still playing after a few moves');
-  // rematch
-  // drive to end
-  while (ot.status === 'playing' && ot.validMoves.length > 0) {
-    const mover = ot.turn === 'a' ? 'a' : 'b';
-    ot = othello.placePiece(ot, mover, ot.validMoves[0]).room;
-  }
-  assert.ok(['finished', 'playing'].includes(ot.status), 'game ends or stalls');
-  if (ot.status === 'finished') {
-    assert.ok(ot.winner === 'a' || ot.winner === 'b' || ot.winner === null, 'finished has winner or draw');
-  }
-  // test rematch
-  if (ot.status === 'finished') {
-    ot = othello.rematchOthello(ot);
-    assert.equal(ot.status, 'playing', 'rematch starts fresh');
-    assert.ok(ot.validMoves.length > 0, 'black has moves after rematch');
-  }
-
-  console.log('engine:check OK');
+console.log('engine:check OK');

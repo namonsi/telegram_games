@@ -146,18 +146,6 @@ export type EmojiRoom = Base & {
   currentRiddle?: { emojis: string; category: string };
 };
 
-export type OthelloRoom = Base & {
-  kind: 'othello';
-  board: number[];
-  validMoves: number[];
-};
-
-export type GomokuRoom = Base & {
-  kind: 'gomoku';
-  board: number[];
-  validMoves: number[];
-};
-
 export type Room =
   | NumberRoom
   | KnowMeRoom
@@ -166,8 +154,6 @@ export type Room =
   | MysteryRoom
   | QuizRoom
   | WordDuelRoom
-  | EmojiRoom
-  | OthelloRoom
-  | GomokuRoom;
+  | EmojiRoom;
 
 export type GameKind = Room['kind'];

@@ -1130,3 +1130,208 @@ label.suspect.picked {
   line-height: 1.2;
   filter: drop-shadow(0 3px 8px rgba(176, 96, 255, 0.3));
 }
+
+/* ---------- othello board ---------- */
+
+.othello-board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0;
+  width: min(92vw, 380px);
+  margin: 12px auto;
+  border: 6px solid #4a2c1a;
+  border-radius: 6px;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    inset 0 0 12px rgba(0, 0, 0, 0.15);
+  background: #1a6b30;
+  background-image:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.04), transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(0, 0, 0, 0.08), transparent 50%);
+  overflow: hidden;
+}
+
+.othello-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: min(6vw, 26px);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s;
+}
+
+.othello-cell:disabled {
+  cursor: default;
+}
+
+.othello-cell:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.othello-cell.valid {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.othello-cell.valid::after {
+  content: '';
+  width: 18%;
+  height: 18%;
+  border-radius: 50%;
+  background: rgba(100, 220, 120, 0.5);
+  box-shadow: 0 0 6px rgba(100, 220, 120, 0.3);
+  position: absolute;
+}
+
+.othello-cell .disc {
+  width: 72%;
+  height: 72%;
+  border-radius: 50%;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.othello-cell .disc-black {
+  background: radial-gradient(ellipse at 35% 30%, #555, #111 60%, #000);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.1);
+}
+
+.othello-cell .disc-white {
+  background: radial-gradient(ellipse at 35% 30%, #fff, #e8e8e8 40%, #ccc 70%, #aaa);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 3px rgba(255, 255, 255, 0.8);
+}
+
+/* ---------- gomoku board ---------- */
+
+.gomoku-board {
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  gap: 0;
+  width: min(92vw, 400px);
+  margin: 12px auto;
+  border: 5px solid #6b4226;
+  border-radius: 4px;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    inset 0 0 8px rgba(0, 0, 0, 0.1);
+  background:
+    linear-gradient(135deg, #d4a556 0%, #c49444 30%, #b8883c 60%, #a87832 100%);
+  background-size: 100% 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* wood grain overlay */
+.gomoku-board::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 8px,
+    rgba(139, 90, 43, 0.08) 8px,
+    rgba(139, 90, 43, 0.08) 9px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.gomoku-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: min(4.5vw, 20px);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+
+.gomoku-cell:disabled {
+  cursor: default;
+}
+
+/* intersection lines */
+.gomoku-cell::before {
+  content: '';
+  position: absolute;
+  background: rgba(60, 40, 20, 0.35);
+}
+
+.gomoku-cell::before {
+  width: 100%;
+  height: 1px;
+  top: 50%;
+  left: 0;
+}
+
+.gomoku-cell::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  background: rgba(60, 40, 20, 0.35);
+}
+
+.gomoku-cell .stone {
+  width: 78%;
+  height: 78%;
+  border-radius: 50%;
+  position: relative;
+  z-index: 3;
+  transition: transform 0.15s ease;
+}
+
+.gomoku-cell .stone-black {
+  background: radial-gradient(ellipse at 35% 28%, #444, #1a1a1a 45%, #000 70%);
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.08),
+    0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.gomoku-cell .stone-white {
+  background: radial-gradient(ellipse at 35% 28%, #fff, #f0f0f0 30%, #d8d8d8 60%, #bbb 80%);
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.25),
+    inset 0 1px 3px rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* star points on the board */
+.gomoku-cell.star-point::before {
+  content: '';
+  position: absolute;
+  width: 20%;
+  height: 20%;
+  border-radius: 50%;
+  background: rgba(60, 40, 20, 0.5);
+  z-index: 2;
+}
+
+/* ghost stone on hover */
+.gomoku-cell:not(:disabled):hover::after {
+  content: '';
+  position: absolute;
+  width: 78%;
+  height: 78%;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.12);
+  z-index: 2;
+}
+
+.gomoku-cell:not(:disabled):hover .stone {
+  transform: scale(1.08);
+}

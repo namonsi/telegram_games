@@ -22,6 +22,7 @@ const KIND_LABEL: Record<GameKind, string> = {
   wordduel: '🔤 Word Duel',
   emoji: '🧩 Emoji Riddles',
   crazy8s: '🃏 Crazy 8s',
+  heist: '🏦 Heist',
 };
 
 /** /admin — games log; lives on the website only, never linked in the bot */

@@ -14,11 +14,14 @@ import {
   investigate,
   joinRoom,
   makeGuess,
+  moveGuard,
+  moveThief,
   playCrazy8sCard,
   placeShips,
   react,
   rematchRoom,
   sendChat,
+  sendHeistMessage,
   setMyTarget,
   setSecret,
   submitKnowMePicks,
@@ -50,6 +53,9 @@ type Body = {
     | 'drawCard'
     | 'react'
     | 'chat'
+    | 'moveThief'
+    | 'moveGuard'
+    | 'sendHeistMessage'
     | 'rematch';
   roomId?: string;
   kind?: GameKind;
@@ -70,6 +76,8 @@ type Body = {
   firstName?: string;
   card?: number;
   color?: string;
+  direction?: string;
+  guardIndex?: number;
 };
 
 type Req = {
@@ -153,6 +161,12 @@ async function run(body: Body, initData: string | undefined): Promise<unknown> {
       return react(initData, body.roomId!, body.emoji);
     case 'chat':
       return sendChat(initData, body.roomId!, body.text);
+    case 'moveThief':
+      return moveThief(initData, body.roomId!, body.direction!);
+    case 'moveGuard':
+      return moveGuard(initData, body.roomId!, body.guardIndex!);
+    case 'sendHeistMessage':
+      return sendHeistMessage(initData, body.roomId!, body.text!);
     case 'rematch':
       return rematchRoom(initData, body.roomId!);
     default:

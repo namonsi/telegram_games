@@ -4,6 +4,7 @@ import type {
   BattleshipRoom,
   Crazy8sRoom,
   EmojiRoom,
+  HeistRoom,
   KnowMeRoom,
   KnowMePick,
   NumberRoom,
@@ -41,6 +42,8 @@ export function sanitizeRoom(room: Room, viewerId: string | null): Room {
       return sanitizeEmoji(room, viewerId);
     case 'crazy8s':
       return sanitizeCrazy8s(room, viewerId);
+    case 'heist':
+      return sanitizeHeist(room, viewerId);
     default:
       return room;
   }
@@ -131,4 +134,25 @@ function sanitizeCrazy8s(room: Crazy8sRoom, viewerId: string | null): Crazy8sRoo
     return { ...room, hands: {}, handCount };
   }
   return { ...room, hands: { [viewerId]: room.hands[viewerId] ?? [] }, handCount };
+}
+
+function sanitizeHeist(room: HeistRoom, viewerId: string | null): HeistRoom {
+  if (!viewerId) {
+    return { ...room, grid: room.grid, guardPatrols: [], guardPositions: [], thiefPosition: -1 };
+  }
+  if (viewerId === room.vaultRunnerId) {
+    // Vault Runner: sees loot, exit, thief — NOT guards
+    return {
+      ...room,
+      guardPatrols: [],
+      guardPositions: [],
+    };
+  }
+  // Security: sees guards, patrol paths — NOT loot or thief
+  return {
+    ...room,
+    grid: room.grid.map((row) => row.map((cell) => (cell === 2 ? 0 : cell))),
+    thiefPosition: -1,
+    lootCollected: -1,
+  };
 }

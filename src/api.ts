@@ -4,6 +4,7 @@ import type {
   Crazy8sRoom,
   EmojiRoom,
   GameKind,
+  HeistRoom,
   KnowMeRoom,
   MysteryRoom,
   QuizRoom,
@@ -37,6 +38,8 @@ type Body = {
   firstName?: string;
   card?: number;
   color?: string;
+  direction?: string;
+  guardIndex?: number;
 };
 
 async function post<T = Room>(body: Body): Promise<T> {
@@ -83,6 +86,10 @@ export const api = {
   playCard: (roomId: string, cardIndex: number, chosenColor?: string) =>
     post<Crazy8sRoom>({ action: 'playCard', roomId, card: cardIndex, color: chosenColor }),
   drawCard: (roomId: string) => post<Crazy8sRoom>({ action: 'drawCard', roomId }),
+
+  moveThief: (roomId: string, direction: string) => post<HeistRoom>({ action: 'moveThief', roomId, direction }),
+  moveGuard: (roomId: string, guardIndex: number) => post<HeistRoom>({ action: 'moveGuard', roomId, guardIndex }),
+  sendHeistMessage: (roomId: string, text: string) => post<HeistRoom>({ action: 'sendHeistMessage', roomId, text }),
 
   react: (roomId: string, emoji: string) => post({ action: 'react', roomId, emoji }),
   chat: (roomId: string, text: string) => post({ action: 'chat', roomId, text }),

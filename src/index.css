@@ -1297,3 +1297,118 @@ label.suspect.picked {
   transform: scale(1.1);
 }
 
+/* ---------- heist grid ---------- */
+
+.heist-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+  max-width: 360px;
+  margin: 0 auto;
+  background: #0a0a0a;
+  padding: 4px;
+  border-radius: 8px;
+  border: 2px solid #333;
+}
+
+.heist-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 20px;
+  position: relative;
+}
+
+.heist-cell.floor { background: #1a1a1a; }
+.heist-cell.wall { background: #2d2d2d; box-shadow: inset 0 0 8px rgba(0,0,0,0.5); }
+.heist-cell.loot { background: #1a1a1a; }
+.heist-cell.exit { background: #1a1a1a; box-shadow: 0 0 12px rgba(0,255,100,0.3); }
+
+/* Tokens */
+.heist-token {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  position: absolute;
+}
+
+.heist-token.thief { background: #ff4444; box-shadow: 0 0 8px rgba(255,68,68,0.5); }
+.heist-token.guard { background: #4488ff; box-shadow: 0 0 8px rgba(68,136,255,0.5); }
+
+/* Loot coin */
+.heist-loot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
+  box-shadow: 0 0 6px rgba(255,215,0,0.4);
+}
+
+/* Exit glow */
+.heist-exit {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: rgba(0,255,100,0.2);
+  border: 1px solid #0f6;
+  box-shadow: 0 0 12px rgba(0,255,100,0.3);
+}
+
+/* Patrol path highlight */
+.heist-cell.patrol {
+  outline: 2px dashed rgba(68,136,255,0.3);
+}
+
+/* Direction buttons */
+.heist-controls {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.heist-dir-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--fg);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.heist-dir-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* Message panel */
+.heist-messages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+.heist-msg-btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--fg);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.heist-msg-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* Role indicator */
+.heist-role {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 4px 0;
+  color: var(--muted);
+}
+

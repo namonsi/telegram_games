@@ -15,13 +15,14 @@ import QuizDuel from './ui/QuizDuel';
 import WordDuel from './ui/WordDuel';
 import EmojiRiddles from './ui/EmojiRiddles';
 import Crazy8s from './ui/Crazy8s';
+import Heist from './ui/Heist';
 
 import SurpriseGate from './ui/SurpriseGate';
 import HowTo from './ui/HowTo';
 
 type Me = { id: string; firstName: string; photoUrl?: string; username?: string };
 
-const KINDS: GameKind[] = ['number', 'knowme', 'battleship', 'twenty', 'mystery', 'quiz', 'wordduel', 'emoji', 'crazy8s'];
+const KINDS: GameKind[] = ['number', 'knowme', 'battleship', 'twenty', 'mystery', 'quiz', 'wordduel', 'emoji', 'crazy8s', 'heist'];
 
 export default function App({ me }: { me: Me }) {
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -113,6 +114,8 @@ export default function App({ me }: { me: Me }) {
         return <EmojiRiddles meId={me.id} room={room} onUpdate={applyRoom} />;
       case 'crazy8s':
         return <Crazy8s meId={me.id} room={room} onUpdate={applyRoom} />;
+      case 'heist':
+        return <Heist meId={me.id} room={room} onUpdate={applyRoom} />;
     }
   };
 

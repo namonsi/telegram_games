@@ -8,6 +8,7 @@ import * as quiz from './quiz';
 import * as wordduel from './wordduel';
 import * as emoji from './emojiriddle';
 import * as crazy8s from './crazy8s';
+import * as heist from './heist';
 
 import { MYSTERY_CASES } from '../../api/mysteryCases';
 import { QUIZ_BANK } from '../../api/quizBank';
@@ -304,5 +305,30 @@ assert.equal(c8.status, 'playing', 'rematch starts');
 assert.equal(c8.hands.a.length, 7, 'alice has 7 again');
 assert.equal(c8.hands.b.length, 7, 'bob has 7 again');
 assert.equal(c8.winner, null, 'winner cleared');
+
+// ---------- heist ----------
+let h = heist.createHeist('h1', alice);
+h = join(h, bob);
+h = heist.startHeist(h);
+assert.equal(h.status, 'playing', 'heist starts playing');
+assert.equal(h.grid.length, 6, 'heist grid is 6 rows');
+assert.equal(h.grid[0]!.length, 6, 'heist grid is 6 cols');
+assert.equal(h.guardPatrols.length, 2, 'heist has 2 guards');
+assert.equal(h.totalLoot, 3, 'heist has 3 loot');
+// vault runner moves — try right, if blocked try down (random grid may wall cell 1)
+const moveResult = heist.moveThief(h, h.vaultRunnerId, 'right');
+const hAfterMove = moveResult.room.turn === h.securityId
+  ? moveResult.room
+  : heist.moveThief(h, h.vaultRunnerId, 'down').room;
+assert.equal(hAfterMove.turn, h.securityId, 'turn passes to security');
+// security moves guard
+h = heist.moveGuard(hAfterMove, h.securityId, 0).room;
+assert.equal(h.turn, h.vaultRunnerId, 'turn passes back to vault runner');
+// message
+h = heist.sendHeistMessage(h, h.vaultRunnerId, 'Go!');
+assert.equal(h.messages.length, 1, 'message sent');
+// rematch
+h = heist.rematchHeist({ ...h, status: 'finished', winner: 'a' });
+assert.equal(h.status, 'playing', 'heist rematch works');
 
 console.log('engine:check OK');

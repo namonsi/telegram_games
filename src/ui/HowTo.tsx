@@ -83,6 +83,15 @@ const HOWTOS: Record<GameKind, { emoji: string; name: string; steps: string[] }>
       'First to empty their hand wins. If the deck runs out, the discard pile is reshuffled.',
     ],
   },
+  heist: {
+    emoji: '🏦',
+    name: 'Heist',
+    steps: [
+      'One player is the Vault Runner (thief), the other is Security (guards).',
+      'Vault Runner: collect all loot and reach the exit. Avoid guards!',
+      'Security: move guards to catch the thief. Use preset messages to communicate.',
+    ],
+  },
 };
 
 /** corner "?" button + tutorial overlay; closes via the X, the backdrop, or Escape */

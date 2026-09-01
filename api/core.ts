@@ -9,7 +9,8 @@ import * as wordduel from '../src/game/wordduel.js';
 
 import * as emoji from '../src/game/emojiriddle.js';
 import * as crazy8s from '../src/game/crazy8s.js';
-import type { Color, GameKind, KnowMePick, Player, Range, Room } from '../src/game/types.js';
+import * as heist from '../src/game/heist.js';
+import type { Color, GameKind, HeistRoom, KnowMePick, Player, Range, Room } from '../src/game/types.js';
 import { MYSTERY_CASES } from './mysteryCases.js';
 import { QUIZ_BANK } from './quizBank.js';
 import { WORD_BANK } from './wordBank.js';
@@ -130,6 +131,9 @@ export async function create(
     case 'crazy8s':
       room = crazy8s.createCrazy8s(id, creator);
       break;
+    case 'heist':
+      room = heist.createHeist(id, creator);
+      break;
     default:
       throw new Error('Unknown game kind');
   }
@@ -164,6 +168,8 @@ function kickoff(room: Room): Room {
       return { ...room, status: 'playing' };
     case 'crazy8s':
       return crazy8s.startCrazy8s(room);
+    case 'heist':
+      return heist.startHeist(room as HeistRoom);
 
     case 'twenty':
       return room.secret ? { ...room, status: 'playing' } : room;
@@ -331,6 +337,27 @@ export async function drawCrazy8s(initData: string | undefined, roomId: string):
   });
 }
 
+export async function moveThief(initData: string | undefined, roomId: string, direction: string): Promise<Room> {
+  return withRoom(initData, roomId, (room, userId) => {
+    if (room.kind !== 'heist') throw new Error('Wrong game');
+    return heist.moveThief(room, userId, direction as 'up' | 'down' | 'left' | 'right').room;
+  });
+}
+
+export async function moveGuard(initData: string | undefined, roomId: string, guardIndex: number): Promise<Room> {
+  return withRoom(initData, roomId, (room, userId) => {
+    if (room.kind !== 'heist') throw new Error('Wrong game');
+    return heist.moveGuard(room, userId, guardIndex).room;
+  });
+}
+
+export async function sendHeistMessage(initData: string | undefined, roomId: string, text: string): Promise<Room> {
+  return withRoom(initData, roomId, (room, userId) => {
+    if (room.kind !== 'heist') throw new Error('Wrong game');
+    return heist.sendHeistMessage(room, userId, text);
+  });
+}
+
 export async function react(initData: string | undefined, roomId: string, emoji: string | undefined): Promise<Room> {
   return withRoom(initData, roomId, (room, userId) =>
     setReaction(room, (emoji ?? '').slice(0, 8), REACTION_TTL),
@@ -369,6 +396,8 @@ export async function rematchRoom(initData: string | undefined, roomId: string):
         return emoji.rematchEmoji(room, EMOJI_BANK.length);
       case 'crazy8s':
         return crazy8s.rematchCrazy8s(room);
+      case 'heist':
+        return heist.rematchHeist(room);
     }
   });
 }

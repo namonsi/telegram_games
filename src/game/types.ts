@@ -157,6 +157,19 @@ export type Crazy8sRoom = Base & {
   currentColor: Color;
 };
 
+export type HeistRoom = Base & {
+  kind: 'heist';
+  grid: number[][];              // 6×6: 0=floor, 1=wall, 2=loot, 3=exit
+  guardPatrols: number[][];      // 2 guards, each is array of cell indices (cyclic patrol)
+  guardPositions: number[];      // current cell index per guard
+  thiefPosition: number;         // current cell index
+  lootCollected: number;         // 0-3
+  totalLoot: number;             // 3
+  vaultRunnerId: string;         // player who controls the thief
+  securityId: string;            // player who controls guards
+  messages: { from: string; text: string; at: number }[];
+};
+
 export type Room =
   | NumberRoom
   | KnowMeRoom
@@ -166,6 +179,7 @@ export type Room =
   | QuizRoom
   | WordDuelRoom
   | EmojiRoom
-  | Crazy8sRoom;
+  | Crazy8sRoom
+  | HeistRoom;
 
 export type GameKind = Room['kind'];

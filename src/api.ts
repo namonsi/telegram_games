@@ -1,6 +1,7 @@
 import { initData } from '@tma.js/sdk';
 import type {
   BattleshipRoom,
+  Crazy8sRoom,
   EmojiRoom,
   GameKind,
   KnowMeRoom,
@@ -34,6 +35,8 @@ type Body = {
   round?: number;
   emoji?: string;
   firstName?: string;
+  card?: number;
+  color?: string;
 };
 
 async function post<T = Room>(body: Body): Promise<T> {
@@ -76,6 +79,10 @@ export const api = {
   answerQuiz: (roomId: string, choice: number) => post<QuizRoom>({ action: 'answerQuiz', roomId, choice }),
   guessWord: (roomId: string, word: string) => post<WordDuelRoom>({ action: 'guessWord', roomId, text: word }),
   answerEmoji: (roomId: string, answer: string) => post<EmojiRoom>({ action: 'answerEmoji', roomId, text: answer }),
+
+  playCard: (roomId: string, cardIndex: number, chosenColor?: string) =>
+    post<Crazy8sRoom>({ action: 'playCard', roomId, card: cardIndex, color: chosenColor }),
+  drawCard: (roomId: string) => post<Crazy8sRoom>({ action: 'drawCard', roomId }),
 
   react: (roomId: string, emoji: string) => post({ action: 'react', roomId, emoji }),
   chat: (roomId: string, text: string) => post({ action: 'chat', roomId, text }),

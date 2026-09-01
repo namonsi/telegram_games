@@ -9,7 +9,7 @@ import * as wordduel from '../src/game/wordduel.js';
 
 import * as emoji from '../src/game/emojiriddle.js';
 import * as crazy8s from '../src/game/crazy8s.js';
-import type { GameKind, KnowMePick, Player, Range, Room } from '../src/game/types.js';
+import type { Color, GameKind, KnowMePick, Player, Range, Room } from '../src/game/types.js';
 import { MYSTERY_CASES } from './mysteryCases.js';
 import { QUIZ_BANK } from './quizBank.js';
 import { WORD_BANK } from './wordBank.js';
@@ -314,7 +314,19 @@ export async function answerEmojiRiddle(initData: string | undefined, roomId: st
   });
 }
 
+export async function playCrazy8sCard(initData: string | undefined, roomId: string, cardIndex: number | undefined, chosenColor: string | undefined): Promise<Room> {
+  return withRoom(initData, roomId, (room, userId) => {
+    if (room.kind !== 'crazy8s') throw new Error('Wrong game');
+    return crazy8s.playCard(room, userId, cardIndex!, chosenColor as Color | undefined).room;
+  });
+}
 
+export async function drawCrazy8s(initData: string | undefined, roomId: string): Promise<Room> {
+  return withRoom(initData, roomId, (room, userId) => {
+    if (room.kind !== 'crazy8s') throw new Error('Wrong game');
+    return crazy8s.drawCard(room, userId).room;
+  });
+}
 
 export async function react(initData: string | undefined, roomId: string, emoji: string | undefined): Promise<Room> {
   return withRoom(initData, roomId, (room, userId) =>

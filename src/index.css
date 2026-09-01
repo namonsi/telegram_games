@@ -1131,4 +1131,164 @@ label.suspect.picked {
   filter: drop-shadow(0 3px 8px rgba(176, 96, 255, 0.3));
 }
 
+/* ---------- crazy eights cards ---------- */
+
+.c8s-play-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.c8s-deck,
+.c8s-discard {
+  width: 70px;
+  height: 100px;
+  border-radius: 8px;
+  position: relative;
+  cursor: pointer;
+}
+
+.c8s-deck {
+  background: repeating-conic-gradient(#1a1a2e 0% 25%, #2a2a4e 0% 50%) 50% / 12px 12px;
+  border: 2px solid #444;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.c8s-discard {
+  border: 2px solid #666;
+}
+
+/* Card face */
+.c8s-card {
+  width: 70px;
+  height: 100px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  user-select: none;
+}
+
+.c8s-card.selected {
+  transform: translateY(-8px);
+  box-shadow: 0 4px 12px rgba(255,93,143,0.4);
+}
+
+.c8s-card:hover:not(:disabled) {
+  transform: translateY(-4px);
+}
+
+.c8s-card:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* Color variants */
+.c8s-card.red { background: linear-gradient(135deg, #ff4444, #cc0000); }
+.c8s-card.blue { background: linear-gradient(135deg, #4488ff, #0044cc); }
+.c8s-card.green { background: linear-gradient(135deg, #44cc44, #008800); }
+.c8s-card.yellow { background: linear-gradient(135deg, #ffcc00, #cc9900); color: #333; text-shadow: none; }
+.c8s-card.wild { background: conic-gradient(#ff4444, #4488ff, #44cc44, #ffcc00, #ff4444); }
+
+.c8s-card .card-label {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.c8s-card .card-sub {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+/* Hand */
+.c8s-hand {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+
+/* Color indicator */
+.c8s-color-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 6px rgba(0,0,0,0.3);
+}
+
+.c8s-color-dot.red { background: #ff4444; }
+.c8s-color-dot.blue { background: #4488ff; }
+.c8s-color-dot.green { background: #44cc44; }
+.c8s-color-dot.yellow { background: #ffcc00; }
+
+/* Opponent hand (card backs) */
+.c8s-opponent-hand {
+  display: flex;
+  justify-content: center;
+  gap: -8px;
+  padding: 8px 0;
+}
+
+.c8s-card-back {
+  width: 40px;
+  height: 56px;
+  border-radius: 4px;
+  background: repeating-conic-gradient(#1a1a2e 0% 25%, #2a2a4e 0% 50%) 50% / 8px 8px;
+  border: 1px solid #444;
+  margin-left: -8px;
+}
+
+.c8s-card-back:first-child { margin-left: 0; }
+
+/* Draw button */
+.c8s-draw-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--accent-2);
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.c8s-draw-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Color picker modal */
+.c8s-color-picker {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+.c8s-color-picker button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.c8s-color-picker button:hover {
+  border-color: #fff;
+  transform: scale(1.1);
+}
 

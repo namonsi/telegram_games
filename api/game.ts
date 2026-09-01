@@ -7,13 +7,14 @@ import {
   answerTwenty,
   askTwenty,
   create,
+  drawCrazy8s,
   fireShot,
   guessSecret,
   guessWordDuel,
   investigate,
   joinRoom,
   makeGuess,
-
+  playCrazy8sCard,
   placeShips,
   react,
   rematchRoom,
@@ -45,6 +46,8 @@ type Body = {
     | 'answerQuiz'
     | 'guessWord'
     | 'answerEmoji'
+    | 'playCard'
+    | 'drawCard'
     | 'react'
     | 'chat'
     | 'rematch';
@@ -65,6 +68,8 @@ type Body = {
   round?: number;
   emoji?: string;
   firstName?: string;
+  card?: number;
+  color?: string;
 };
 
 type Req = {
@@ -140,6 +145,10 @@ async function run(body: Body, initData: string | undefined): Promise<unknown> {
       return guessWordDuel(initData, body.roomId!, body.text);
     case 'answerEmoji':
       return answerEmojiRiddle(initData, body.roomId!, body.text);
+    case 'playCard':
+      return playCrazy8sCard(initData, body.roomId!, body.card, body.color);
+    case 'drawCard':
+      return drawCrazy8s(initData, body.roomId!);
     case 'react':
       return react(initData, body.roomId!, body.emoji);
     case 'chat':

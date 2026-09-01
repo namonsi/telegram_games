@@ -3,6 +3,7 @@ import { QUIZ_BANK } from './quizBank.js';
 import type {
   BattleshipRoom,
   EmojiRoom,
+  GomokuRoom,
   KnowMeRoom,
   KnowMePick,
   NumberRoom,
@@ -40,6 +41,8 @@ export function sanitizeRoom(room: Room, viewerId: string | null): Room {
     case 'emoji':
       return sanitizeEmoji(room, viewerId);
     case 'othello':
+      return room;
+    case 'gomoku':
       return room;
   }
 }

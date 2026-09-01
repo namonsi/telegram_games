@@ -83,6 +83,15 @@ const HOWTOS: Record<GameKind, { emoji: string; name: string; steps: string[] }>
       'If you can\'t move, your turn is skipped. When the board is full or neither can move, most discs wins.',
     ],
   },
+  gomoku: {
+    emoji: '🎯',
+    name: 'Gomoku',
+    steps: [
+      'You play on a 15×15 board — ⚫ goes first, then alternate turns.',
+      'Place a stone on any empty intersection. The first to get 5 in a row (horizontal, vertical, or diagonal) wins.',
+      'If the board fills with no winner, it\'s a draw.',
+    ],
+  },
 };
 
 /** corner "?" button + tutorial overlay; closes via the X, the backdrop, or Escape */

@@ -152,6 +152,12 @@ export type OthelloRoom = Base & {
   validMoves: number[];
 };
 
+export type GomokuRoom = Base & {
+  kind: 'gomoku';
+  board: number[];
+  validMoves: number[];
+};
+
 export type Room =
   | NumberRoom
   | KnowMeRoom
@@ -161,6 +167,7 @@ export type Room =
   | QuizRoom
   | WordDuelRoom
   | EmojiRoom
-  | OthelloRoom;
+  | OthelloRoom
+  | GomokuRoom;
 
 export type GameKind = Room['kind'];

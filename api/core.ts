@@ -7,6 +7,7 @@ import * as mystery from '../src/game/mystery.js';
 import * as quiz from '../src/game/quiz.js';
 import * as wordduel from '../src/game/wordduel.js';
 import * as othello from '../src/game/othello.js';
+import * as gomoku from '../src/game/gomoku.js';
 import * as emoji from '../src/game/emojiriddle.js';
 import type { GameKind, KnowMePick, Player, Range, Room } from '../src/game/types.js';
 import { MYSTERY_CASES } from './mysteryCases.js';
@@ -129,6 +130,9 @@ export async function create(
     case 'othello':
       room = othello.createOthello(id, creator);
       break;
+    case 'gomoku':
+      room = gomoku.createGomoku(id, creator);
+      break;
   }
   await putRoom(room);
   await addGameRecord({
@@ -161,8 +165,8 @@ function kickoff(room: Room): Room {
       return { ...room, status: 'playing' };
     case 'othello':
       return { ...room, status: 'playing', turn: room.players[0].id };
-    case 'othello':
-      return { ...room, status: 'playing' };
+    case 'gomoku':
+      return { ...room, status: 'playing', turn: room.players[0].id };
     case 'twenty':
       return room.secret ? { ...room, status: 'playing' } : room;
     default:
@@ -319,6 +323,13 @@ export async function placeOthello(initData: string | undefined, roomId: string,
   });
 }
 
+export async function placeGomoku(initData: string | undefined, roomId: string, cell: number | undefined): Promise<Room> {
+  return withRoom(initData, roomId, (room, userId) => {
+    if (room.kind !== 'gomoku') throw new Error('Wrong game');
+    return gomoku.placeStone(room, userId, finite(cell, 'cell')).room;
+  });
+}
+
 export async function react(initData: string | undefined, roomId: string, emoji: string | undefined): Promise<Room> {
   return withRoom(initData, roomId, (room, userId) =>
     setReaction(room, (emoji ?? '').slice(0, 8), REACTION_TTL),
@@ -357,6 +368,8 @@ export async function rematchRoom(initData: string | undefined, roomId: string):
         return emoji.rematchEmoji(room, EMOJI_BANK.length);
       case 'othello':
         return othello.rematchOthello(room);
+      case 'gomoku':
+        return gomoku.rematchGomoku(room);
     }
   });
 }

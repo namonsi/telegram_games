@@ -45,6 +45,27 @@ export default function Othello({ meId, room, onUpdate }: Props) {
     return null;
   };
 
+  if (room.status === 'finished') {
+    const isWinner = room.winner === meId;
+    return (
+      <div className="screen">
+        <h1>Othello</h1>
+        <p className="muted">
+          {room.winner ? (isWinner ? '🎉 You win!' : `${other?.firstName} wins!`) : '🤝 Draw — board full'}
+        </p>
+        <div className="board-meta">⚫ {black} — ⚪ {white}</div>
+        <div className="othello-board" style={{ pointerEvents: 'none' }}>
+          {room.board.map((v, i) => (
+            <div key={i} className="othello-cell">
+              {v === PLAYER_BLACK ? '⚫' : v === PLAYER_WHITE ? '⚪' : ''}
+            </div>
+          ))}
+        </div>
+        <SocialBar room={room} onUpdate={onUpdate} />
+      </div>
+    );
+  }
+
   return (
     <div className="screen">
       <h1>Othello</h1>
@@ -80,9 +101,9 @@ export default function Othello({ meId, room, onUpdate }: Props) {
 
       {myTurn ? (
         <p className="muted">Your turn — tap a green cell to place your piece</p>
-      ) : room.status === 'playing' ? (
+      ) : (
         <p className="muted">Waiting for {other?.firstName ?? 'your partner'}…</p>
-      ) : null}
+      )}
     </div>
   );
 }

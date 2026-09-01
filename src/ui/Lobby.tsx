@@ -22,6 +22,7 @@ const GAMES: { kind: GameKind; emoji: string; name: string; tagline: string }[] 
   { kind: 'quiz', emoji: '🧠', name: 'Quiz Duel', tagline: 'General knowledge showdown' },
   { kind: 'emoji', emoji: '🧩', name: 'Emoji Riddles', tagline: 'Guess the movie, song or phrase' },
   { kind: 'othello', emoji: '⚫', name: 'Othello', tagline: 'Flip discs, dominate the board' },
+  { kind: 'gomoku', emoji: '🎯', name: 'Gomoku', tagline: 'Five in a row to win' },
   { kind: 'number', emoji: '🔢', name: 'Guess the Number', tagline: 'The classic — find their secret number' },
 ];
 

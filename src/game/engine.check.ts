@@ -7,6 +7,7 @@ import * as mystery from './mystery';
 import * as quiz from './quiz';
 import * as wordduel from './wordduel';
 import * as emoji from './emojiriddle';
+import * as crazy8s from './crazy8s';
 
 import { MYSTERY_CASES } from '../../api/mysteryCases';
 import { QUIZ_BANK } from '../../api/quizBank';
@@ -261,5 +262,47 @@ while (em.status !== 'finished') {
 assert.equal(em.winner, 'a', 'alice wins the riddle race');
 em = emoji.rematchEmoji(em, emojiBankSize);
   assert.equal(em.status, 'playing', 'emoji rematch starts fresh');
+
+// ---------- crazy 8s ----------
+let c8 = crazy8s.createCrazy8s('c8', alice);
+assert.equal(c8.status, 'waiting', 'crazy8s starts waiting');
+c8 = join(c8, bob);
+c8 = crazy8s.startCrazy8s(c8);
+assert.equal(c8.status, 'playing', 'crazy8s starts playing');
+assert.equal(c8.players.length, 2, 'two players');
+assert.equal(Object.keys(c8.hands).length, 2, 'both have hands');
+assert.equal(c8.hands.a.length, 7, 'alice has 7 cards');
+assert.equal(c8.hands.b.length, 7, 'bob has 7 cards');
+assert.ok(c8.discard.length >= 1, 'discard has a card');
+assert.ok(c8.currentColor, 'currentColor set');
+
+// test card helpers
+assert.equal(typeof crazy8s.cardLabel(0), 'string', 'cardLabel returns string');
+
+// drive a game to finish: alice plays matching cards, bob draws
+while (c8.status === 'playing') {
+  const hand = c8.hands[c8.turn];
+  const topDiscard = c8.discard[c8.discard.length - 1];
+  const playable = hand.findIndex((c) => crazy8s.canPlay(c, topDiscard, c8.currentColor));
+  if (playable !== -1) {
+    const card = hand[playable];
+    const isWild = crazy8s.getColor(card) === 'wild';
+    const result = crazy8s.playCard(c8, c8.turn, playable, isWild ? 'red' : undefined);
+    c8 = result.room;
+  } else {
+    const result = crazy8s.drawCard(c8, c8.turn);
+    c8 = result.room;
+  }
+}
+assert.equal(c8.status, 'finished', 'game finishes');
+assert.ok(c8.winner, 'someone won');
+assert.equal(c8.stats.games, 1, 'stats incremented');
+
+// rematch
+c8 = crazy8s.rematchCrazy8s(c8);
+assert.equal(c8.status, 'playing', 'rematch starts');
+assert.equal(c8.hands.a.length, 7, 'alice has 7 again');
+assert.equal(c8.hands.b.length, 7, 'bob has 7 again');
+assert.equal(c8.winner, null, 'winner cleared');
 
 console.log('engine:check OK');

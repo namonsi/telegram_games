@@ -8,6 +8,7 @@ import * as quiz from '../src/game/quiz.js';
 import * as wordduel from '../src/game/wordduel.js';
 
 import * as emoji from '../src/game/emojiriddle.js';
+import * as crazy8s from '../src/game/crazy8s.js';
 import type { GameKind, KnowMePick, Player, Range, Room } from '../src/game/types.js';
 import { MYSTERY_CASES } from './mysteryCases.js';
 import { QUIZ_BANK } from './quizBank.js';
@@ -126,7 +127,11 @@ export async function create(
     case 'emoji':
       room = emoji.createEmoji(id, creator, EMOJI_BANK.length);
       break;
-
+    case 'crazy8s':
+      room = crazy8s.createCrazy8s(id, creator);
+      break;
+    default:
+      throw new Error('Unknown game kind');
   }
   await putRoom(room);
   await addGameRecord({
@@ -157,6 +162,8 @@ function kickoff(room: Room): Room {
       return { ...room, status: 'playing' };
     case 'emoji':
       return { ...room, status: 'playing' };
+    case 'crazy8s':
+      return crazy8s.startCrazy8s(room);
 
     case 'twenty':
       return room.secret ? { ...room, status: 'playing' } : room;
@@ -345,7 +352,8 @@ export async function rematchRoom(initData: string | undefined, roomId: string):
       }
       case 'emoji':
         return emoji.rematchEmoji(room, EMOJI_BANK.length);
-
+      case 'crazy8s':
+        return crazy8s.rematchCrazy8s(room);
     }
   });
 }

@@ -74,7 +74,15 @@ const HOWTOS: Record<GameKind, { emoji: string; name: string; steps: string[] }>
       'First to 7 correct wins. Answers reveal after you both lock in.',
     ],
   },
-
+  crazy8s: {
+    emoji: '🃏',
+    name: 'Crazy 8s',
+    steps: [
+      'Match the top card by color or number — or play a Wild to change the color.',
+      'Special cards: Skip (opponent loses turn), Draw 2, and Wild Draw 4 force your partner to pick up.',
+      'First to empty their hand wins. If the deck runs out, the discard pile is reshuffled.',
+    ],
+  },
 };
 
 /** corner "?" button + tutorial overlay; closes via the X, the backdrop, or Escape */

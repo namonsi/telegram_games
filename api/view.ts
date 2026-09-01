@@ -2,6 +2,7 @@ import { EMOJI_BANK } from './emojiBank.js';
 import { QUIZ_BANK } from './quizBank.js';
 import type {
   BattleshipRoom,
+  Crazy8sRoom,
   EmojiRoom,
   KnowMeRoom,
   KnowMePick,
@@ -38,7 +39,10 @@ export function sanitizeRoom(room: Room, viewerId: string | null): Room {
       return sanitizeWordDuel(room, viewerId);
     case 'emoji':
       return sanitizeEmoji(room, viewerId);
-
+    case 'crazy8s':
+      return sanitizeCrazy8s(room, viewerId);
+    default:
+      return room;
   }
 }
 
@@ -115,4 +119,14 @@ function sanitizeEmoji(room: EmojiRoom, viewerId: string | null): EmojiRoom {
     picks[p.id] = p.id === viewerId ? raw : '';
   }
   return { ...room, currentRiddle: meta ? { emojis: meta.emojis, category: meta.category } : undefined, picks };
+}
+
+/** opponent's hand is hidden; only the viewer's own hand leaks */
+function sanitizeCrazy8s(room: Crazy8sRoom, viewerId: string | null): Crazy8sRoom {
+  if (!viewerId) return { ...room, hands: {} };
+  const hands: Record<string, number[]> = {};
+  for (const p of room.players) {
+    hands[p.id] = p.id === viewerId ? (room.hands[p.id] ?? []) : [];
+  }
+  return { ...room, hands };
 }

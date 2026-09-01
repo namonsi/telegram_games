@@ -146,6 +146,16 @@ export type EmojiRoom = Base & {
   currentRiddle?: { emojis: string; category: string };
 };
 
+export type Color = 'red' | 'blue' | 'green' | 'yellow';
+
+export type Crazy8sRoom = Base & {
+  kind: 'crazy8s';
+  deck: number[];
+  discard: number[];
+  hands: Record<string, number[]>;
+  currentColor: Color;
+};
+
 export type Room =
   | NumberRoom
   | KnowMeRoom
@@ -154,6 +164,7 @@ export type Room =
   | MysteryRoom
   | QuizRoom
   | WordDuelRoom
-  | EmojiRoom;
+  | EmojiRoom
+  | Crazy8sRoom;
 
 export type GameKind = Room['kind'];

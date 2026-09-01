@@ -315,9 +315,12 @@ export async function answerEmojiRiddle(initData: string | undefined, roomId: st
 }
 
 export async function playCrazy8sCard(initData: string | undefined, roomId: string, cardIndex: number | undefined, chosenColor: string | undefined): Promise<Room> {
+  if (cardIndex == null) throw new Error('Missing card');
+  const validColors = ['red', 'blue', 'green', 'yellow'];
+  const color = chosenColor && validColors.includes(chosenColor) ? chosenColor as Color : undefined;
   return withRoom(initData, roomId, (room, userId) => {
     if (room.kind !== 'crazy8s') throw new Error('Wrong game');
-    return crazy8s.playCard(room, userId, cardIndex!, chosenColor as Color | undefined).room;
+    return crazy8s.playCard(room, userId, cardIndex, color).room;
   });
 }
 

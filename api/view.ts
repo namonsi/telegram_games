@@ -123,10 +123,12 @@ function sanitizeEmoji(room: EmojiRoom, viewerId: string | null): EmojiRoom {
 
 /** opponent's hand is hidden; only the viewer's own hand leaks */
 function sanitizeCrazy8s(room: Crazy8sRoom, viewerId: string | null): Crazy8sRoom {
-  if (!viewerId) return { ...room, hands: {} };
-  const hands: Record<string, number[]> = {};
+  const handCount: Record<string, number> = {};
   for (const p of room.players) {
-    hands[p.id] = p.id === viewerId ? (room.hands[p.id] ?? []) : [];
+    handCount[p.id] = room.hands[p.id]?.length ?? 0;
   }
-  return { ...room, hands };
+  if (!viewerId || !room.players.some(p => p.id === viewerId)) {
+    return { ...room, hands: {}, handCount };
+  }
+  return { ...room, hands: { [viewerId]: room.hands[viewerId] ?? [] }, handCount };
 }

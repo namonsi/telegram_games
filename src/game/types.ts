@@ -153,6 +153,7 @@ export type Crazy8sRoom = Base & {
   deck: number[];
   discard: number[];
   hands: Record<string, number[]>;
+  handCount?: Record<string, number>;
   currentColor: Color;
 };
 

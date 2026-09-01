@@ -27,11 +27,11 @@ function cardDisplay(card: number): { label: string; sub: string } {
   return { label: String(face), sub: '' };
 }
 
-function Card({ card, onClick, disabled }: { card: number; onClick?: () => void; disabled?: boolean }) {
+function Card({ card, onClick, disabled, style }: { card: number; onClick?: () => void; disabled?: boolean; style?: React.CSSProperties }) {
   const { label, sub } = cardDisplay(card);
   const cls = `c8s-card ${cardColorClass(card)}`;
   return (
-    <button className={cls} onClick={onClick} disabled={disabled} type="button">
+    <button className={cls} onClick={onClick} disabled={disabled} type="button" style={style}>
       <span className="card-label">{label}</span>
       {sub && <span className="card-sub">{sub}</span>}
     </button>
@@ -57,7 +57,7 @@ export default function Crazy8s({ meId, room, onUpdate }: Props) {
   const isMyTurn = room.turn === meId && room.status === 'playing';
   const topDiscard = room.discard[room.discard.length - 1];
   const opponent = room.players.find((p) => p.id !== meId);
-  const opponentHand = opponent ? (room.hands[opponent.id]?.length ?? 0) : 0;
+  const opponentHand = opponent ? (room.handCount?.[opponent.id] ?? 0) : 0;
   const myHand = room.hands[meId] ?? [];
 
   const play = async (cardIndex: number, chosenColor?: string) => {
@@ -149,9 +149,7 @@ export default function Crazy8s({ meId, room, onUpdate }: Props) {
         >
           {topDiscard !== undefined && <Card card={topDiscard} disabled />}
         </div>
-        <div className="c8s-color-dot" style={{ display: 'inline-block' }}>
-          <div className={`c8s-color-dot ${room.currentColor}`} />
-        </div>
+        <div className={`c8s-color-dot ${room.currentColor}`} />
         <div className="c8s-deck" title={`${room.deck.length} cards left`} />
       </div>
 
@@ -192,14 +190,18 @@ export default function Crazy8s({ meId, room, onUpdate }: Props) {
 
       {/* My hand */}
       <div className="c8s-hand">
-        {myHand.map((card, idx) => (
-          <Card
-            key={`${card}-${idx}`}
-            card={card}
-            onClick={() => handleCardClick(idx)}
-            disabled={!isMyTurn || busy}
-          />
-        ))}
+        {myHand.map((card, idx) => {
+          const angle = (idx - myHand.length / 2) * 5;
+          return (
+            <Card
+              key={`${card}-${idx}`}
+              card={card}
+              onClick={() => handleCardClick(idx)}
+              disabled={!isMyTurn || busy}
+              style={{ transform: `rotate(${angle}deg)` }}
+            />
+          );
+        })}
       </div>
 
       {myHand.length === 0 && <p className="muted" style={{ textAlign: 'center' }}>Waiting for result…</p>}

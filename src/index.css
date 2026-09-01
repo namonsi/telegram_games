@@ -1218,6 +1218,11 @@ label.suspect.picked {
   gap: 4px;
   flex-wrap: wrap;
   padding: 8px 0;
+  perspective: 600px;
+}
+
+.c8s-hand .c8s-card {
+  transform-origin: bottom center;
 }
 
 /* Color indicator */

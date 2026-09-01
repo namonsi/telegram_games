@@ -337,7 +337,10 @@ export async function drawCrazy8s(initData: string | undefined, roomId: string):
   });
 }
 
+const VALID_DIRECTIONS = new Set(['up', 'down', 'left', 'right']);
+
 export async function moveThief(initData: string | undefined, roomId: string, direction: string): Promise<Room> {
+  if (!VALID_DIRECTIONS.has(direction)) throw new Error('Invalid direction');
   return withRoom(initData, roomId, (room, userId) => {
     if (room.kind !== 'heist') throw new Error('Wrong game');
     return heist.moveThief(room, userId, direction as 'up' | 'down' | 'left' | 'right').room;
@@ -354,7 +357,7 @@ export async function moveGuard(initData: string | undefined, roomId: string, gu
 export async function sendHeistMessage(initData: string | undefined, roomId: string, text: string): Promise<Room> {
   return withRoom(initData, roomId, (room, userId) => {
     if (room.kind !== 'heist') throw new Error('Wrong game');
-    return heist.sendHeistMessage(room, userId, text);
+    return heist.sendHeistMessage(room, userId, text).room;
   });
 }
 

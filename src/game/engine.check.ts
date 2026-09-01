@@ -325,10 +325,39 @@ assert.equal(hAfterMove.turn, h.securityId, 'turn passes to security');
 h = heist.moveGuard(hAfterMove, h.securityId, 0).room;
 assert.equal(h.turn, h.vaultRunnerId, 'turn passes back to vault runner');
 // message
-h = heist.sendHeistMessage(h, h.vaultRunnerId, 'Go!');
+h = heist.sendHeistMessage(h, h.vaultRunnerId, 'Go!').room;
 assert.equal(h.messages.length, 1, 'message sent');
 // rematch
 h = heist.rematchHeist({ ...h, status: 'finished', winner: 'a' });
 assert.equal(h.status, 'playing', 'heist rematch works');
+
+// loot removal: build a deterministic grid with loot at (0,1)
+const h2 = heist.createHeist('h2', alice);
+const joined2 = join(h2, bob);
+const fixedGrid = [
+  [0, 2, 0, 0, 0, 0],
+  [1, 1, 1, 1, 1, 1],
+  [0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 3],
+];
+const h2Start = heist.startHeist(joined2);
+const h2Fixed = {
+  ...h2Start,
+  grid: fixedGrid,
+  guardPatrols: [[10, 11], [20, 21]],
+  guardPositions: [10, 20],
+  vaultRunnerId: alice.id,
+  securityId: bob.id,
+} as ReturnType<typeof heist.createHeist> & { grid: number[][] };
+assert.equal(h2Fixed.grid[0]![1], 2, 'grid has loot at (0,1)');
+const moveLoot = heist.moveThief(h2Fixed, alice.id, 'right');
+assert.equal(moveLoot.room.lootCollected, 1, 'loot collected after stepping on it');
+assert.equal(moveLoot.room.grid[0]![1], 0, 'loot cell becomes floor after collection');
+// security moves so vault runner can act again
+const afterGuard = heist.moveGuard(moveLoot.room, bob.id, 0).room;
+const moveAgain = heist.moveThief(afterGuard, alice.id, 'left');
+assert.equal(moveAgain.room.lootCollected, 1, 'no double-collect on same cell');
 
 console.log('engine:check OK');

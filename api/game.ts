@@ -163,8 +163,11 @@ async function run(body: Body, initData: string | undefined): Promise<unknown> {
       return sendChat(initData, body.roomId!, body.text);
     case 'moveThief':
       return moveThief(initData, body.roomId!, body.direction!);
-    case 'moveGuard':
-      return moveGuard(initData, body.roomId!, body.guardIndex!);
+    case 'moveGuard': {
+      const gi = body.guardIndex;
+      if (typeof gi !== 'number' || !Number.isFinite(gi)) throw new Error('Invalid guardIndex');
+      return moveGuard(initData, body.roomId!, gi);
+    }
     case 'sendHeistMessage':
       return sendHeistMessage(initData, body.roomId!, body.text!);
     case 'rematch':

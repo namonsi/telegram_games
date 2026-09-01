@@ -216,6 +216,13 @@ export function moveThief(
   let updated = { ...room, thiefPosition: newCell };
   updated.lootCollected = checkLoot(updated, newCell);
 
+  if (updated.lootCollected > room.lootCollected) {
+    const [lr, lc] = cellToRC(newCell);
+    const newGrid = updated.grid.map((row) => [...row]);
+    newGrid[lr]![lc] = 0;
+    updated = { ...updated, grid: newGrid };
+  }
+
   if (checkWin(updated)) {
     return { room: { ...updated, status: 'finished', winner: room.vaultRunnerId, turn: '' } };
   }
@@ -256,12 +263,14 @@ export function sendHeistMessage(
   room: HeistRoom,
   playerId: string,
   text: string,
-): HeistRoom {
+): { room: HeistRoom } {
   if (room.status !== 'playing') throw new Error('Game not in progress');
   if (!PRESET_MESSAGES.includes(text)) throw new Error('Invalid message');
   return {
-    ...room,
-    messages: [...room.messages, { from: playerId, text, at: Date.now() }],
+    room: {
+      ...room,
+      messages: [...room.messages, { from: playerId, text, at: Date.now() }],
+    },
   };
 }
 

@@ -74,13 +74,17 @@ export function createCrazy8s(id: string, creator: Player): Crazy8sRoom {
   };
 }
 
-export function startCrazy8s(room: Crazy8sRoom): Crazy8sRoom {
+function initGame(players: Player[]): {
+  deck: number[];
+  discard: number[];
+  hands: Record<string, number[]>;
+  currentColor: Color;
+} {
   const deck = shuffle(buildDeck());
-
   const hands: Record<string, number[]> = {};
   let remaining = [...deck];
 
-  for (const p of room.players) {
+  for (const p of players) {
     hands[p.id] = remaining.splice(0, 7);
   }
 
@@ -93,20 +97,15 @@ export function startCrazy8s(room: Crazy8sRoom): Crazy8sRoom {
       discard.push(topCard);
       break;
     }
-    // wild goes to bottom, put back and keep flipping
     remaining.unshift(topCard);
   }
 
-  return {
-    ...room,
-    deck: remaining,
-    discard,
-    hands,
-    currentColor: getColor(topCard) as Color,
-    turn: room.players[0].id,
-    status: 'playing',
-    winner: null,
-  };
+  return { deck: remaining, discard, hands, currentColor: getColor(topCard) as Color };
+}
+
+export function startCrazy8s(room: Crazy8sRoom): Crazy8sRoom {
+  const { deck, discard, hands, currentColor } = initGame(room.players);
+  return { ...room, deck, discard, hands, currentColor, turn: room.players[0].id, status: 'playing', winner: null };
 }
 
 export function playCard(
@@ -139,24 +138,24 @@ export function playCard(
   newHand.splice(cardIndex, 1);
   const hands = { ...room.hands, [playerId]: newHand };
 
-  const newDiscard = [...room.discard, card];
+  let newDiscard = [...room.discard, card];
   const currentColor = color === 'wild' ? chosenColor! : getColor(card) as Color;
   const face = getFace(card);
   const opponentId = otherPlayer(room.players, playerId).id;
 
   let nextTurn = opponentId;
   let nextHands = { ...hands };
+  let remainingDeck = [...room.deck];
 
   if (face === 'skip' || face === 'draw2' || face === 'wild4') {
     const drawCount = face === 'draw2' ? 2 : face === 'wild4' ? 4 : 0;
     if (drawCount > 0) {
-      let remainingDeck = [...room.deck];
       const drawn: number[] = [];
       for (let i = 0; i < drawCount; i++) {
         if (remainingDeck.length === 0 && newDiscard.length > 1) {
           const reshuffled = reshuffleDiscard(newDiscard);
-          newDiscard.splice(0, newDiscard.length - 1, ...reshuffled.deck);
-          // Note: topCard stays, deck becomes reshuffled rest
+          remainingDeck = reshuffled.deck;
+          newDiscard = [reshuffled.topCard];
         }
         if (remainingDeck.length > 0) {
           drawn.push(remainingDeck.pop()!);
@@ -166,22 +165,17 @@ export function playCard(
         ...nextHands,
         [opponentId]: [...(nextHands[opponentId] ?? []), ...drawn],
       };
-      // Skip means current player goes again; draw means opponent loses turn
-      nextTurn = face === 'skip' ? playerId : playerId; // skip: current player goes again
-      // Actually: skip = current plays again, draw2/wild4 = opponent loses turn → current plays again
-      nextTurn = playerId;
-    } else {
-      // skip: current player goes again
-      nextTurn = playerId;
     }
+    // skip, draw2, wild4: current player goes again
+    nextTurn = playerId;
   }
 
   const won = newHand.length === 0;
-  let remainingDeck = [...room.deck];
 
   if (remainingDeck.length === 0 && newDiscard.length > 1) {
     const reshuffled = reshuffleDiscard(newDiscard);
     remainingDeck = reshuffled.deck;
+    newDiscard = [reshuffled.topCard];
   }
 
   const next: Crazy8sRoom = {
@@ -235,35 +229,6 @@ export function drawCard(room: Crazy8sRoom, playerId: string): { room: Crazy8sRo
 
 export function rematchCrazy8s(room: Crazy8sRoom): Crazy8sRoom {
   if (room.status !== 'finished') throw new Error('Game is not finished');
-
-  const fresh = shuffle(buildDeck());
-  const hands: Record<string, number[]> = {};
-  let remaining = [...fresh];
-
-  for (const p of room.players) {
-    hands[p.id] = remaining.splice(0, 7);
-  }
-
-  let discard: number[] = [];
-  let topCard: number;
-  while (true) {
-    topCard = remaining.pop()!;
-    const color = getColor(topCard);
-    if (color !== 'wild') {
-      discard.push(topCard);
-      break;
-    }
-    remaining.unshift(topCard);
-  }
-
-  return {
-    ...room,
-    deck: remaining,
-    discard,
-    hands,
-    currentColor: getColor(topCard) as Color,
-    turn: room.players[0].id,
-    status: 'playing',
-    winner: null,
-  };
+  const { deck, discard, hands, currentColor } = initGame(room.players);
+  return { ...room, deck, discard, hands, currentColor, turn: room.players[0].id, status: 'playing', winner: null };
 }

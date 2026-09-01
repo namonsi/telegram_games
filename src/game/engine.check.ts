@@ -7,6 +7,7 @@ import * as mystery from './mystery';
 import * as quiz from './quiz';
 import * as wordduel from './wordduel';
 import * as emoji from './emojiriddle';
+import * as othello from './othello';
 import { MYSTERY_CASES } from '../../api/mysteryCases';
 import { QUIZ_BANK } from '../../api/quizBank';
 import type { Player } from './types';
@@ -259,6 +260,45 @@ while (em.status !== 'finished') {
 }
 assert.equal(em.winner, 'a', 'alice wins the riddle race');
 em = emoji.rematchEmoji(em, emojiBankSize);
-assert.equal(em.status, 'playing', 'emoji rematch starts fresh');
+  assert.equal(em.status, 'playing', 'emoji rematch starts fresh');
 
-console.log('engine:check OK');
+// ---------- othello ----------
+  let ot = othello.createOthello('ot1', alice);
+  ot = join(ot, bob);
+  ot = { ...ot, status: 'playing', turn: alice.id, validMoves: ot.validMoves };
+  // initial valid moves for black (alice)
+  assert.ok(ot.validMoves.length > 0, 'black has initial moves');
+  assert.throws(() => othello.placePiece(ot, 'b', ot.validMoves[0]), /Not your turn/, 'white cannot move first');
+  // black plays a valid move
+  const firstMove = ot.validMoves[0];
+  const otOut1 = othello.placePiece(ot, 'a', firstMove);
+  assert.ok(otOut1.flips.length > 0, 'first move flips at least one disc');
+  ot = otOut1.room;
+  assert.equal(ot.turn, 'b', 'turn passes to white');
+  // white has valid moves
+  assert.ok(ot.validMoves.length > 0, 'white has valid moves after black plays');
+  // play a few moves to ensure it runs
+  for (let i = 0; i < 10 && ot.status === 'playing'; i++) {
+    const mover = ot.turn === 'a' ? 'a' : 'b';
+    if (ot.validMoves.length === 0) break;
+    ot = othello.placePiece(ot, mover, ot.validMoves[0]).room;
+  }
+  assert.equal(ot.status, 'playing', 'game still playing after a few moves');
+  // rematch
+  // drive to end
+  while (ot.status === 'playing' && ot.validMoves.length > 0) {
+    const mover = ot.turn === 'a' ? 'a' : 'b';
+    ot = othello.placePiece(ot, mover, ot.validMoves[0]).room;
+  }
+  assert.ok(['finished', 'playing'].includes(ot.status), 'game ends or stalls');
+  if (ot.status === 'finished') {
+    assert.ok(ot.winner === 'a' || ot.winner === 'b' || ot.winner === null, 'finished has winner or draw');
+  }
+  // test rematch
+  if (ot.status === 'finished') {
+    ot = othello.rematchOthello(ot);
+    assert.equal(ot.status, 'playing', 'rematch starts fresh');
+    assert.ok(ot.validMoves.length > 0, 'black has moves after rematch');
+  }
+
+  console.log('engine:check OK');

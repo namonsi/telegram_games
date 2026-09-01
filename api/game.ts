@@ -13,6 +13,7 @@ import {
   investigate,
   joinRoom,
   makeGuess,
+  placeOthello,
   placeShips,
   react,
   rematchRoom,
@@ -34,6 +35,7 @@ type Body = {
     | 'acceptKnowMe'
     | 'placeShips'
     | 'fire'
+    | 'placeOthello'
     | 'setSecret'
     | 'ask'
     | 'answerTwenty'
@@ -119,6 +121,8 @@ async function run(body: Body, initData: string | undefined): Promise<unknown> {
       return placeShips(initData, body.roomId!, body.ships);
     case 'fire':
       return fireShot(initData, body.roomId!, body.cell);
+    case 'placeOthello':
+      return placeOthello(initData, body.roomId!, body.cell);
     case 'setSecret':
       return setSecret(initData, body.roomId!, body.secret);
     case 'ask':

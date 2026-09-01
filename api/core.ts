@@ -6,6 +6,7 @@ import * as twenty from '../src/game/twenty.js';
 import * as mystery from '../src/game/mystery.js';
 import * as quiz from '../src/game/quiz.js';
 import * as wordduel from '../src/game/wordduel.js';
+import * as othello from '../src/game/othello.js';
 import * as emoji from '../src/game/emojiriddle.js';
 import type { GameKind, KnowMePick, Player, Range, Room } from '../src/game/types.js';
 import { MYSTERY_CASES } from './mysteryCases.js';
@@ -125,6 +126,9 @@ export async function create(
     case 'emoji':
       room = emoji.createEmoji(id, creator, EMOJI_BANK.length);
       break;
+    case 'othello':
+      room = othello.createOthello(id, creator);
+      break;
   }
   await putRoom(room);
   await addGameRecord({
@@ -154,6 +158,10 @@ function kickoff(room: Room): Room {
     case 'wordduel':
       return { ...room, status: 'playing' };
     case 'emoji':
+      return { ...room, status: 'playing' };
+    case 'othello':
+      return { ...room, status: 'playing', turn: room.players[0].id };
+    case 'othello':
       return { ...room, status: 'playing' };
     case 'twenty':
       return room.secret ? { ...room, status: 'playing' } : room;
@@ -304,6 +312,13 @@ export async function answerEmojiRiddle(initData: string | undefined, roomId: st
   });
 }
 
+export async function placeOthello(initData: string | undefined, roomId: string, cell: number | undefined): Promise<Room> {
+  return withRoom(initData, roomId, (room, userId) => {
+    if (room.kind !== 'othello') throw new Error('Wrong game');
+    return othello.placePiece(room, userId, finite(cell, 'cell')).room;
+  });
+}
+
 export async function react(initData: string | undefined, roomId: string, emoji: string | undefined): Promise<Room> {
   return withRoom(initData, roomId, (room, userId) =>
     setReaction(room, (emoji ?? '').slice(0, 8), REACTION_TTL),
@@ -340,6 +355,8 @@ export async function rematchRoom(initData: string | undefined, roomId: string):
       }
       case 'emoji':
         return emoji.rematchEmoji(room, EMOJI_BANK.length);
+      case 'othello':
+        return othello.rematchOthello(room);
     }
   });
 }

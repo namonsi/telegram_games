@@ -4,9 +4,22 @@ import type { Room } from '../src/game/types.js';
 export const hasKV = Boolean(process.env.KV_REST_API_URL);
 const memory = new Map<string, Room>();
 
+/** KV/Upstash failures are infra problems, not bad client input. */
+export class StorageError extends Error {
+  constructor(cause: unknown) {
+    super('Room storage is unavailable. Check the KV_REST_API_URL and KV_REST_API_TOKEN environment variables.');
+    this.name = 'StorageError';
+    console.error('KV request failed:', cause);
+  }
+}
+
 export async function getRoom(id: string): Promise<Room | null> {
   if (!hasKV) return memory.get(id) ?? null;
-  return kv.get<Room>(`room:${id}`);
+  try {
+    return await kv.get<Room>(`room:${id}`);
+  } catch (e) {
+    throw new StorageError(e);
+  }
 }
 
 export async function putRoom(room: Room): Promise<void> {
@@ -14,7 +27,11 @@ export async function putRoom(room: Room): Promise<void> {
     memory.set(room.id, room);
     return;
   }
-  await kv.set(`room:${room.id}`, room);
+  try {
+    await kv.set(`room:${room.id}`, room);
+  } catch (e) {
+    throw new StorageError(e);
+  }
 }
 
 export async function kvWriteTest(): Promise<{ hasKV: boolean; canWrite: boolean; error?: string }> {

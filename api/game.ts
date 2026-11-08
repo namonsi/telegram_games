@@ -26,6 +26,7 @@ import {
   setSecret,
   submitKnowMePicks,
 } from './core.js';
+import { StorageError } from './store.js';
 import type { GameKind, Range } from '../src/game/types.js';
 
 type Body = {
@@ -105,6 +106,9 @@ export default async function handler(req: Req, res: Res) {
     const room = await run(body, initData);
     return res.json({ room });
   } catch (err) {
+    if (err instanceof StorageError) {
+      return res.status(503).json({ error: err.message });
+    }
     return res.status(400).json({ error: err instanceof Error ? err.message : 'Bad request' });
   }
 }
